@@ -1,3 +1,4 @@
+use crate::rotate::Rotate;
 use crate::vector::Vector;
 
 /// A point in 2D space
@@ -29,6 +30,16 @@ impl<T: std::ops::Sub<Output = T>> std::ops::Sub<Point<T>> for Point<T> {
     }
 }
 
+/// Rotate a point by 90 degrees
+impl<T: Copy> Rotate for Point<T> {
+    fn rotate(&self) -> Self {
+        Point {
+            x: self.y,
+            y: self.x,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -54,5 +65,12 @@ mod tests {
         let result = a - b;
         assert_eq!(result.x, 1);
         assert_eq!(result.y, 1);
+    }
+
+    #[test]
+    fn test_rotate() {
+        let result = Point::new(2, 3).rotate();
+        assert_eq!(result.x, 3);
+        assert_eq!(result.y, 2);
     }
 }
