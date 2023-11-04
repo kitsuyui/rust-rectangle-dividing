@@ -1,7 +1,9 @@
 use crate::component::Component;
+use crate::direction::{Direction, ValueForDirection};
 use crate::rotate::Rotate;
 use crate::vector::Vector;
 /// A point in 2D space
+#[derive(Debug, PartialEq, Clone)]
 pub struct Point<T>
 where
     T: Copy,
@@ -10,14 +12,14 @@ where
     y: T,
 }
 
-impl<T> Clone for Point<T>
+impl<T> ValueForDirection<T> for Point<T>
 where
     T: Copy,
 {
-    fn clone(&self) -> Self {
-        Self {
-            x: self.x,
-            y: self.y,
+    fn value_for_direction(&self, direction: &Direction) -> T {
+        match direction {
+            Direction::Vertical => self.x,
+            Direction::Horizontal => self.y,
         }
     }
 }
@@ -46,11 +48,11 @@ where
 }
 
 /// A point in 2D space with default values. in many cases, this is (0, 0)
-impl<T> Point<T>
+impl<T> std::default::Default for Point<T>
 where
     T: Default + Copy,
 {
-    pub fn default() -> Self {
+    fn default() -> Self {
         Self::new(T::default(), T::default())
     }
 }
@@ -96,6 +98,13 @@ mod tests {
         let result = Point::<i32>::default();
         assert_eq!(result.x, 0);
         assert_eq!(result.y, 0);
+    }
+
+    #[test]
+    fn test_value_for_direction() {
+        let result = Point::new(2, 3);
+        assert_eq!(result.value_for_direction(&Direction::Vertical), 2);
+        assert_eq!(result.value_for_direction(&Direction::Horizontal), 3);
     }
 
     #[test]

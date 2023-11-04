@@ -1,10 +1,12 @@
 use crate::component::Component;
+use crate::direction::{Direction, SizeForDirection};
 use crate::dividing::Dividing;
 use crate::point::Point;
 use crate::rectangle::{Area, Rectangle, RectangleSize};
 use crate::rotate::Rotate;
 
 /// axis aligned starting at x, y and ending at x + width, y + height (left to right, top to bottom)
+#[derive(Debug, PartialEq, Clone)]
 pub struct AxisAlignedRectangle<T>
 where
     T: Copy,
@@ -13,15 +15,12 @@ where
     pub rectangle: Rectangle<T>,
 }
 
-impl<T> Clone for AxisAlignedRectangle<T>
+impl<T> SizeForDirection<T> for AxisAlignedRectangle<T>
 where
     T: Copy,
 {
-    fn clone(&self) -> Self {
-        Self {
-            point: self.point.clone(),
-            rectangle: self.rectangle.clone(),
-        }
+    fn size_for_direction(&self, direction: &Direction) -> T {
+        self.rectangle.size_for_direction(direction)
     }
 }
 
@@ -113,7 +112,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::dividing::DividingDirection;
+    use crate::direction::Direction;
 
     use super::*;
 
@@ -183,7 +182,7 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(6, 2);
         let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values(vec![1, 2], &DividingDirection::Vertical);
+        let divided = a_rect.divide_by_values(vec![1, 2], &Direction::Vertical);
         assert_eq!(divided[0].x(), 2);
         assert_eq!(divided[0].y(), 3);
         assert_eq!(divided[0].width(), 1);
@@ -218,7 +217,7 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(2, 6);
         let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values(vec![3, 2], &DividingDirection::Horizontal);
+        let divided = a_rect.divide_by_values(vec![3, 2], &Direction::Horizontal);
         assert_eq!(divided[0].x(), 2);
         assert_eq!(divided[0].y(), 3);
         assert_eq!(divided[0].width(), 2);

@@ -1,6 +1,8 @@
 use crate::component::Component;
+use crate::direction::{Direction, ValueForDirection};
 
 /// A simple 2D vector
+#[derive(Debug, PartialEq, Clone)]
 pub struct Vector<T>
 where
     T: Copy,
@@ -31,12 +33,24 @@ where
     }
 }
 
+impl<T> ValueForDirection<T> for Vector<T>
+where
+    T: Copy,
+{
+    fn value_for_direction(&self, direction: &Direction) -> T {
+        match direction {
+            Direction::Vertical => self.x,
+            Direction::Horizontal => self.y,
+        }
+    }
+}
+
 /// A simple 2D vector with default values. in many cases, this is (0, 0)
-impl<T> Vector<T>
+impl<T> std::default::Default for Vector<T>
 where
     T: Copy + Default,
 {
-    pub fn default() -> Self {
+    fn default() -> Self {
         Self::new(T::default(), T::default())
     }
 }
