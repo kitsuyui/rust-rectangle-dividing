@@ -1,9 +1,46 @@
 use crate::dividing::Dividing;
 use crate::rotate::Rotate;
 /// rectangle in 2D space with a width and height
-pub struct Rectangle<T> {
-    pub width: T,
-    pub height: T,
+pub struct Rectangle<T>
+where
+    T: Copy,
+{
+    width: T,
+    height: T,
+}
+
+impl<T> Clone for Rectangle<T>
+where
+    T: Copy,
+{
+    fn clone(&self) -> Self {
+        Self {
+            width: self.width,
+            height: self.height,
+        }
+    }
+}
+
+pub trait RectangleSize<T>
+where
+    T: Copy,
+{
+    fn width(&self) -> T;
+    fn height(&self) -> T;
+}
+
+/// A rectangle in 2D space with a width and height
+impl<T> RectangleSize<T> for Rectangle<T>
+where
+    T: Copy,
+{
+    fn width(&self) -> T {
+        self.width
+    }
+
+    fn height(&self) -> T {
+        self.height
+    }
 }
 
 /// Area of an axis aligned rectangle
@@ -12,14 +49,20 @@ pub trait Area<T> {
 }
 
 /// A rectangle in 2D space constructor
-impl<T> Rectangle<T> {
+impl<T> Rectangle<T>
+where
+    T: Copy,
+{
     pub fn new(width: T, height: T) -> Self {
         Self { width, height }
     }
 }
 
 /// Rotate a rectangle by 90 degrees
-impl<T: Copy> Rotate for Rectangle<T> {
+impl<T> Rotate for Rectangle<T>
+where
+    T: Copy,
+{
     fn rotate(&self) -> Self {
         Self {
             width: self.height,
@@ -29,13 +72,19 @@ impl<T: Copy> Rotate for Rectangle<T> {
 }
 
 /// Area of a rectangle
-impl<T: std::ops::Mul<Output = T> + Copy> Rectangle<T> {
+impl<T> Rectangle<T>
+where
+    T: std::ops::Mul<Output = T> + Copy,
+{
     pub fn area(&self) -> T {
         self.width * self.height
     }
 }
 
-impl<T: std::ops::Sub<Output = T> + Copy> Dividing<T> for Rectangle<T> {
+impl<T> Dividing<T> for Rectangle<T>
+where
+    T: Copy + std::ops::Sub<Output = T>,
+{
     /// dividing a rectangle into two rectangles (vertical)
     fn divide_vertical(&self, x: T) -> (Rectangle<T>, Rectangle<T>) {
         (
@@ -55,6 +104,8 @@ impl<T: std::ops::Sub<Output = T> + Copy> Dividing<T> for Rectangle<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::dividing::DividingDirection;
+
     use super::*;
 
     #[test]
@@ -93,5 +144,41 @@ mod tests {
         assert_eq!(rect_a.height, 1);
         assert_eq!(rect_b.width, 2);
         assert_eq!(rect_b.height, 3);
+    }
+
+    #[test]
+    fn test_divide() {
+        let (rect_a, rect_b) = Rectangle::new(4, 2).divide(1, &DividingDirection::Vertical);
+        assert_eq!(rect_a.width, 1);
+        assert_eq!(rect_a.height, 2);
+        assert_eq!(rect_b.width, 3);
+        assert_eq!(rect_b.height, 2);
+
+        let (rect_a, rect_b) = Rectangle::new(2, 4).divide(1, &DividingDirection::Horizontal);
+        assert_eq!(rect_a.width, 2);
+        assert_eq!(rect_a.height, 1);
+        assert_eq!(rect_b.width, 2);
+        assert_eq!(rect_b.height, 3);
+    }
+
+    #[test]
+    fn test_divide_nth() {
+        let rect = Rectangle::new(6, 2);
+        let divided = rect.divide_by_values(vec![1, 2], &DividingDirection::Vertical);
+        assert_eq!(divided[0].width, 1);
+        assert_eq!(divided[0].height, 2);
+        assert_eq!(divided[1].width, 2);
+        assert_eq!(divided[1].height, 2);
+        assert_eq!(divided[2].width, 3);
+        assert_eq!(divided[2].height, 2);
+
+        let rect = Rectangle::new(2, 6);
+        let divided = rect.divide_by_values(vec![3, 2], &DividingDirection::Horizontal);
+        assert_eq!(divided[0].width, 2);
+        assert_eq!(divided[0].height, 3);
+        assert_eq!(divided[1].width, 2);
+        assert_eq!(divided[1].height, 2);
+        assert_eq!(divided[2].width, 2);
+        assert_eq!(divided[2].height, 1);
     }
 }

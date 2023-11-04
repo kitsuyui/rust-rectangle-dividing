@@ -1,28 +1,65 @@
+use crate::component::Component;
 use crate::rotate::Rotate;
 use crate::vector::Vector;
-
 /// A point in 2D space
-pub struct Point<T> {
-    pub x: T,
-    pub y: T,
+pub struct Point<T>
+where
+    T: Copy,
+{
+    x: T,
+    y: T,
+}
+
+impl<T> Clone for Point<T>
+where
+    T: Copy,
+{
+    fn clone(&self) -> Self {
+        Self {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+
+impl<T> Component<T> for Point<T>
+where
+    T: Copy,
+{
+    fn x(&self) -> T {
+        self.x
+    }
+
+    fn y(&self) -> T {
+        self.y
+    }
 }
 
 /// A point in 2D space constructor
-impl<T> Point<T> {
+impl<T> Point<T>
+where
+    T: Copy,
+{
     pub fn new(x: T, y: T) -> Self {
         Point { x, y }
     }
 }
 
 /// A point in 2D space with default values. in many cases, this is (0, 0)
-impl<T: Default> Point<T> {
+impl<T> Point<T>
+where
+    T: Default + Copy,
+{
     pub fn default() -> Self {
         Self::new(T::default(), T::default())
     }
 }
 
 /// Vector from point A to point B
-impl<T: std::ops::Sub<Output = T>> std::ops::Sub<Point<T>> for Point<T> {
+impl<T> std::ops::Sub<Point<T>> for Point<T>
+where
+    T: Copy + std::ops::Sub<Output = T>,
+{
     type Output = Vector<T>;
 
     fn sub(self, rhs: Point<T>) -> Self::Output {
@@ -31,7 +68,10 @@ impl<T: std::ops::Sub<Output = T>> std::ops::Sub<Point<T>> for Point<T> {
 }
 
 /// Rotate a point by 90 degrees
-impl<T: Copy> Rotate for Point<T> {
+impl<T> Rotate for Point<T>
+where
+    T: Copy,
+{
     fn rotate(&self) -> Self {
         Point {
             x: self.y,
@@ -63,8 +103,8 @@ mod tests {
         let a = Point::new(2, 2);
         let b = Point::new(1, 1);
         let result = a - b;
-        assert_eq!(result.x, 1);
-        assert_eq!(result.y, 1);
+        assert_eq!(result.x(), 1);
+        assert_eq!(result.y(), 1);
     }
 
     #[test]

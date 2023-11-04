@@ -1,29 +1,67 @@
+use crate::component::Component;
+
 /// A simple 2D vector
-pub struct Vector<T> {
-    pub x: T,
-    pub y: T,
+pub struct Vector<T>
+where
+    T: Copy,
+{
+    x: T,
+    y: T,
 }
 
 /// A simple 2D vector constructor
-impl<T> Vector<T> {
+impl<T> Vector<T>
+where
+    T: Copy,
+{
     pub fn new(x: T, y: T) -> Self {
-        Vector { x, y }
+        Self { x, y }
+    }
+}
+
+impl<T> Component<T> for Vector<T>
+where
+    T: Copy,
+{
+    fn x(&self) -> T {
+        self.x
+    }
+    fn y(&self) -> T {
+        self.y
     }
 }
 
 /// A simple 2D vector with default values. in many cases, this is (0, 0)
-impl<T: Default> Vector<T> {
+impl<T> Vector<T>
+where
+    T: Copy + Default,
+{
     pub fn default() -> Self {
         Self::new(T::default(), T::default())
     }
 }
 
 /// Add vector A to vector B
-impl<T: std::ops::Add<Output = T>> std::ops::Add<Vector<T>> for Vector<T> {
+impl<T> std::ops::Add<Vector<T>> for Vector<T>
+where
+    T: Copy + std::ops::Add<Output = T>,
+{
     type Output = Vector<T>;
 
     fn add(self, rhs: Vector<T>) -> Self::Output {
         Vector::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+/// Subtract vector B from vector A
+impl<T> std::ops::Sub<Vector<T>> for Vector<T>
+where
+    T: Copy + std::ops::Sub<Output = T>,
+{
+    type Output = Vector<T>;
+
+    fn sub(self, rhs: Vector<T>) -> Self::Output {
+        Vector::new(self.x - rhs.x, self.y - rhs.y)
     }
 }
 
@@ -34,15 +72,15 @@ mod tests {
     #[test]
     fn test_new() {
         let result = Vector::new(2, 2);
-        assert_eq!(result.x, 2);
-        assert_eq!(result.y, 2);
+        assert_eq!(result.x(), 2);
+        assert_eq!(result.y(), 2);
     }
 
     #[test]
     fn test_default() {
         let result = Vector::<i32>::default();
-        assert_eq!(result.x, 0);
-        assert_eq!(result.y, 0);
+        assert_eq!(result.x(), 0);
+        assert_eq!(result.y(), 0);
     }
 
     #[test]
@@ -50,7 +88,7 @@ mod tests {
         let a = Vector::new(2, 2);
         let b = Vector::new(1, 1);
         let result = a + b;
-        assert_eq!(result.x, 3);
-        assert_eq!(result.y, 3);
+        assert_eq!(result.x(), 3);
+        assert_eq!(result.y(), 3);
     }
 }
