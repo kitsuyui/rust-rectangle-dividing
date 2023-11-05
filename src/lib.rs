@@ -1,14 +1,8 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod axis_aligned_rectangle;
+pub mod component;
+pub mod direction;
+pub mod dividing;
+pub mod point;
+pub mod rectangle;
+pub mod rotate;
+pub mod vector;
