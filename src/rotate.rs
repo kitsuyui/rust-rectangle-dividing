@@ -1,4 +1,4 @@
-pub trait QuarterRotation
+pub (crate) trait QuarterRotation
 where
     Self: Sized,
 {
