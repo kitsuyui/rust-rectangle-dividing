@@ -85,9 +85,9 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let result = Vector::new(2, 2);
-        assert_eq!(result.x(), 2);
-        assert_eq!(result.y(), 2);
+        let v = Vector::new(2, 3);
+        assert_eq!(v.x(), 2);
+        assert_eq!(v.y(), 3);
     }
 
     #[test]
@@ -99,19 +99,19 @@ mod tests {
 
     #[test]
     fn test_add() {
-        let a = Vector::new(2, 2);
-        let b = Vector::new(1, 1);
+        let a = Vector::new(2, 1);
+        let b = Vector::new(3, 6);
         let result = a + b;
-        assert_eq!(result.x(), 3);
-        assert_eq!(result.y(), 3);
+        assert_eq!(result.x(), 5);
+        assert_eq!(result.y(), 7);
     }
 
     #[test]
     fn test_sub() {
-        let a = Vector::new(2, 2);
-        let b = Vector::new(1, 1);
+        let a = Vector::new(2, 1);
+        let b = Vector::new(3, 6);
         let result = a - b;
-        assert_eq!(result.x(), 1);
-        assert_eq!(result.y(), 1);
+        assert_eq!(result.x(), -1);
+        assert_eq!(result.y(), -5);
     }
 }

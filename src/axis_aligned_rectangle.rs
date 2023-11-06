@@ -58,6 +58,14 @@ where
     pub fn new(point: Point<T>, rectangle: Rectangle<T>) -> Self {
         Self { point, rectangle }
     }
+
+    pub fn rect(&self) -> Rectangle<T> {
+        self.rectangle
+    }
+
+    pub fn origin(&self) -> Point<T> {
+        self.point
+    }
 }
 
 /// area of an axis aligned rectangle
@@ -70,10 +78,10 @@ impl<T: std::ops::Mul<Output = T> + Copy> Area<T> for AxisAlignedRectangle<T> {
 /// Rotate an axis aligned rectangle by 90 degrees
 impl<T: Copy> Rotate for AxisAlignedRectangle<T> {
     fn rotate(&self) -> Self {
-        Self {
-            point: self.point.rotate(),
-            rectangle: self.rectangle.rotate(),
-        }
+        Self::new(
+            Point::new(self.y(), self.x()),
+            Rectangle::new(self.height(), self.width()),
+        )
     }
 }
 
@@ -121,6 +129,8 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
         let result = AxisAlignedRectangle::new(point, rect);
+        assert_eq!(result.origin(), point);
+        assert_eq!(result.rect(), rect);
         assert_eq!(result.x(), 2);
         assert_eq!(result.y(), 3);
         assert_eq!(result.width(), 4);
@@ -132,10 +142,8 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
         let result = AxisAlignedRectangle::new(point, rect).rotate();
-        assert_eq!(result.x(), 3);
-        assert_eq!(result.y(), 2);
-        assert_eq!(result.width(), 5);
-        assert_eq!(result.height(), 4);
+        assert_eq!(result.origin(), Point::new(3, 2));
+        assert_eq!(result.rect(), Rectangle::new(5, 4));
     }
 
     #[test]
@@ -151,14 +159,10 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
         let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_vertical(2);
-        assert_eq!(rect_a.x(), 2);
-        assert_eq!(rect_a.y(), 3);
-        assert_eq!(rect_a.width(), 2);
-        assert_eq!(rect_a.height(), 5);
-        assert_eq!(rect_b.x(), 4);
-        assert_eq!(rect_b.y(), 3);
-        assert_eq!(rect_b.width(), 2);
-        assert_eq!(rect_b.height(), 5);
+        assert_eq!(rect_a.origin(), point);
+        assert_eq!(rect_a.rect(), Rectangle::new(2, 5));
+        assert_eq!(rect_b.origin(), Point::new(4, 3));
+        assert_eq!(rect_b.rect(), Rectangle::new(2, 5));
     }
 
     #[test]
@@ -166,14 +170,10 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
         let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_horizontal(2);
-        assert_eq!(rect_a.x(), 2);
-        assert_eq!(rect_a.y(), 3);
-        assert_eq!(rect_a.width(), 4);
-        assert_eq!(rect_a.height(), 2);
-        assert_eq!(rect_b.x(), 2);
-        assert_eq!(rect_b.y(), 5);
-        assert_eq!(rect_b.width(), 4);
-        assert_eq!(rect_b.height(), 3);
+        assert_eq!(rect_a.origin(), point);
+        assert_eq!(rect_a.rect(), Rectangle::new(4, 2));
+        assert_eq!(rect_b.origin(), Point::new(2, 5));
+        assert_eq!(rect_b.rect(), Rectangle::new(4, 3));
     }
 
     #[test]
@@ -183,18 +183,12 @@ mod tests {
         let rect = Rectangle::new(6, 2);
         let a_rect = AxisAlignedRectangle::new(point, rect);
         let divided = a_rect.divide_by_values(vec![1, 2], &Axis::Vertical);
-        assert_eq!(divided[0].x(), 2);
-        assert_eq!(divided[0].y(), 3);
-        assert_eq!(divided[0].width(), 1);
-        assert_eq!(divided[0].height(), 2);
-        assert_eq!(divided[1].x(), 3);
-        assert_eq!(divided[1].y(), 3);
-        assert_eq!(divided[1].width(), 2);
-        assert_eq!(divided[1].height(), 2);
-        assert_eq!(divided[2].x(), 5);
-        assert_eq!(divided[2].y(), 3);
-        assert_eq!(divided[2].width(), 3);
-        assert_eq!(divided[2].height(), 2);
+        assert_eq!(divided[0].origin(), point);
+        assert_eq!(divided[0].rect(), Rectangle::new(1, 2));
+        assert_eq!(divided[1].origin(), Point::new(3, 3));
+        assert_eq!(divided[1].rect(), Rectangle::new(2, 2));
+        assert_eq!(divided[2].origin(), Point::new(5, 3));
+        assert_eq!(divided[2].rect(), Rectangle::new(3, 2));
         assert_eq!(divided.len(), 3);
         // sum of divided rectangles should equal original rectangle
         assert_eq!(
@@ -218,18 +212,12 @@ mod tests {
         let rect = Rectangle::new(2, 6);
         let a_rect = AxisAlignedRectangle::new(point, rect);
         let divided = a_rect.divide_by_values(vec![3, 2], &Axis::Horizontal);
-        assert_eq!(divided[0].x(), 2);
-        assert_eq!(divided[0].y(), 3);
-        assert_eq!(divided[0].width(), 2);
-        assert_eq!(divided[0].height(), 3);
-        assert_eq!(divided[1].x(), 2);
-        assert_eq!(divided[1].y(), 6);
-        assert_eq!(divided[1].width(), 2);
-        assert_eq!(divided[1].height(), 2);
-        assert_eq!(divided[2].x(), 2);
-        assert_eq!(divided[2].y(), 8);
-        assert_eq!(divided[2].width(), 2);
-        assert_eq!(divided[2].height(), 1);
+        assert_eq!(divided[0].origin(), point);
+        assert_eq!(divided[0].rect(), Rectangle::new(2, 3));
+        assert_eq!(divided[1].origin(), Point::new(2, 6));
+        assert_eq!(divided[1].rect(), Rectangle::new(2, 2));
+        assert_eq!(divided[2].origin(), Point::new(2, 8));
+        assert_eq!(divided[2].rect(), Rectangle::new(2, 1));
         assert_eq!(divided.len(), 3);
         // sum of divided rectangles should equal original rectangle
         assert_eq!(

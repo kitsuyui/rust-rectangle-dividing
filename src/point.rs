@@ -3,7 +3,7 @@ use crate::component::Component;
 use crate::rotate::Rotate;
 use crate::vector::Vector;
 /// A point in 2D space
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Point<T>
 where
     T: Copy,
@@ -96,8 +96,7 @@ mod tests {
     #[test]
     fn test_default() {
         let result = Point::<i32>::default();
-        assert_eq!(result.x, 0);
-        assert_eq!(result.y, 0);
+        assert_point_eq(&result, &Point::new(0, 0));
     }
 
     #[test]
@@ -111,15 +110,32 @@ mod tests {
     fn test_sub() {
         let a = Point::new(2, 2);
         let b = Point::new(1, 1);
+        assert_ne!(a, b);
         let result = a - b;
-        assert_eq!(result.x(), 1);
-        assert_eq!(result.y(), 1);
+        assert_eq!(result, Vector::new(1, 1));
     }
 
     #[test]
     fn test_rotate() {
         let result = Point::new(2, 3).rotate();
-        assert_eq!(result.x, 3);
-        assert_eq!(result.y, 2);
+        assert_point_eq(&result, &Point::new(3, 2));
+    }
+
+    /// Helper function to assert that two points are equal
+    fn assert_point_eq<T>(p1: &Point<T>, p2: &Point<T>)
+    where
+        T: Copy + PartialEq + std::fmt::Debug,
+    {
+        assert_point_has_same_component_is_equal(p1, p2);
+    }
+
+    /// Assert that two points have the same component values
+    fn assert_point_has_same_component_is_equal<T>(p1: &Point<T>, p2: &Point<T>)
+    where
+        T: Copy + PartialEq + std::fmt::Debug,
+    {
+        assert_eq!(p1.x, p2.x);
+        assert_eq!(p1.y, p2.y);
+        assert_eq!(p1, p2);
     }
 }
