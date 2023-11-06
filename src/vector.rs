@@ -105,4 +105,13 @@ mod tests {
         assert_eq!(result.x(), 3);
         assert_eq!(result.y(), 3);
     }
+
+    #[test]
+    fn test_sub() {
+        let a = Vector::new(2, 2);
+        let b = Vector::new(1, 1);
+        let result = a - b;
+        assert_eq!(result.x(), 1);
+        assert_eq!(result.y(), 1);
+    }
 }
