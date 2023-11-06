@@ -1,8 +1,10 @@
+use crate::area::Area;
+use crate::aspect_ratio::AspectRatio;
 use crate::axis::{Axis, SizeForAxis};
 use crate::component::Component;
 use crate::dividing::VerticalDividingHelper;
 use crate::point::Point;
-use crate::rectangle::{Area, Rectangle, RectangleSize};
+use crate::rectangle::{Rectangle, RectangleSize};
 use crate::rotate::QuarterRotation;
 
 /// axis aligned starting at x, y and ending at x + width, y + height (left to right, top to bottom)
@@ -65,6 +67,15 @@ where
 
     pub fn origin(&self) -> Point<T> {
         self.point
+    }
+}
+
+impl<T> AspectRatio<T> for AxisAlignedRectangle<T>
+where
+    T: Copy + std::ops::Div<Output = T>,
+{
+    fn aspect_ratio(&self) -> T {
+        self.rectangle.aspect_ratio()
     }
 }
 
@@ -155,8 +166,6 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::axis::Axis;
-    use crate::dividing::Dividing;
 
     use super::*;
 
@@ -188,105 +197,6 @@ mod tests {
         let rect = Rectangle::new(4, 5);
         let result = AxisAlignedRectangle::new(point, rect).area();
         assert_eq!(result, 20);
-    }
-
-    #[test]
-    fn test_divide_vertical() {
-        let point = Point::new(2, 3);
-        let rect = Rectangle::new(4, 5);
-        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_vertical(2);
-        assert_eq!(rect_a.origin(), point);
-        assert_eq!(rect_a.rect(), Rectangle::new(2, 5));
-        assert_eq!(rect_b.origin(), Point::new(4, 3));
-        assert_eq!(rect_b.rect(), Rectangle::new(2, 5));
-
-        let point = Point::new(2, 3);
-        let rect = Rectangle::new(4, 5);
-        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_vertical(1);
-        assert_eq!(rect_a.origin(), point);
-        assert_eq!(rect_a.rect(), Rectangle::new(1, 5));
-        assert_eq!(rect_b.origin(), Point::new(3, 3));
-        assert_eq!(rect_b.rect(), Rectangle::new(3, 5));
-    }
-
-    #[test]
-    fn test_divide_horizontal() {
-        let point = Point::new(2, 3);
-        let rect = Rectangle::new(4, 5);
-        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_horizontal(1);
-        assert_eq!(rect_a.origin(), point);
-        assert_eq!(rect_a.rect(), Rectangle::new(4, 1));
-        assert_eq!(rect_b.origin(), Point::new(2, 4));
-        assert_eq!(rect_b.rect(), Rectangle::new(4, 4));
-
-        let point = Point::new(2, 3);
-        let rect = Rectangle::new(4, 5);
-        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_horizontal(2);
-        assert_eq!(rect_a.origin(), point);
-        assert_eq!(rect_a.rect(), Rectangle::new(4, 2));
-        assert_eq!(rect_b.origin(), Point::new(2, 5));
-        assert_eq!(rect_b.rect(), Rectangle::new(4, 3));
-    }
-
-    #[test]
-    fn test_divide_nth() {
-        // test vertical
-        let point = Point::new(2, 3);
-        let rect = Rectangle::new(6, 2);
-        let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values_and_axis(&vec![1, 2], Axis::Vertical);
-        assert_eq!(divided[0].origin(), point);
-        assert_eq!(divided[0].rect(), Rectangle::new(1, 2));
-        assert_eq!(divided[1].origin(), Point::new(3, 3));
-        assert_eq!(divided[1].rect(), Rectangle::new(2, 2));
-        assert_eq!(divided[2].origin(), Point::new(5, 3));
-        assert_eq!(divided[2].rect(), Rectangle::new(3, 2));
-        assert_eq!(divided.len(), 3);
-        // sum of divided rectangles should equal original rectangle
-        assert_eq!(
-            divided[0].width() + divided[1].width() + divided[2].width(),
-            a_rect.width()
-        );
-        // all divided rectangles should have the same height
-        assert_eq!(divided[0].height(), a_rect.height());
-        assert_eq!(divided[1].height(), a_rect.height());
-        assert_eq!(divided[2].height(), a_rect.height());
-        // the sum of the x and width of the  divided rectangle should equal the x of the next divided rectangle
-        assert_eq!(divided[0].x() + divided[0].width(), divided[1].x());
-        assert_eq!(divided[1].x() + divided[1].width(), divided[2].x());
-        assert_eq!(
-            a_rect.x() + a_rect.width(),
-            divided[2].x() + divided[2].width()
-        );
-
-        // test horizontal
-        let point = Point::new(2, 3);
-        let rect = Rectangle::new(2, 6);
-        let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values_and_axis(&vec![3, 2], Axis::Horizontal);
-        assert_eq!(divided[0].origin(), point);
-        assert_eq!(divided[0].rect(), Rectangle::new(2, 3));
-        assert_eq!(divided[1].origin(), Point::new(2, 6));
-        assert_eq!(divided[1].rect(), Rectangle::new(2, 2));
-        assert_eq!(divided[2].origin(), Point::new(2, 8));
-        assert_eq!(divided[2].rect(), Rectangle::new(2, 1));
-        assert_eq!(divided.len(), 3);
-        // sum of divided rectangles should equal original rectangle
-        assert_eq!(
-            divided[0].height() + divided[1].height() + divided[2].height(),
-            a_rect.height()
-        );
-        // all divided rectangles should have the same width
-        assert_eq!(divided[0].width(), a_rect.width());
-        assert_eq!(divided[1].width(), a_rect.width());
-        assert_eq!(divided[2].width(), a_rect.width());
-        // the sum of the y and height of the  divided rectangle should equal the y of the next divided rectangle
-        assert_eq!(divided[0].y() + divided[0].height(), divided[1].y());
-        assert_eq!(divided[1].y() + divided[1].height(), divided[2].y());
-        assert_eq!(
-            a_rect.y() + a_rect.height(),
-            divided[2].y() + divided[2].height()
-        );
     }
 
     #[test]

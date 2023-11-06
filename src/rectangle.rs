@@ -1,3 +1,5 @@
+use crate::area::Area;
+use crate::aspect_ratio::AspectRatio;
 use crate::axis::{Axis, SizeForAxis};
 use crate::dividing::VerticalDividingHelper;
 use crate::rotate::QuarterRotation;
@@ -46,11 +48,6 @@ where
     }
 }
 
-/// Area of an axis aligned rectangle
-pub trait Area<T> {
-    fn area(&self) -> T;
-}
-
 impl<T> Area<T> for Rectangle<T>
 where
     T: std::ops::Mul<Output = T> + Copy,
@@ -93,6 +90,15 @@ where
             Self::new(x, self.height),
             Self::new(self.width - x, self.height),
         )
+    }
+}
+
+impl<T> AspectRatio<T> for Rectangle<T>
+where
+    T: Copy + std::ops::Div<Output = T>,
+{
+    fn aspect_ratio(&self) -> T {
+        self.width / self.height
     }
 }
 

@@ -1,3 +1,5 @@
+pub(crate) mod area;
+pub(crate) mod aspect_ratio;
 pub mod axis;
 pub mod axis_aligned_rectangle;
 pub(crate) mod component;
