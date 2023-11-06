@@ -117,11 +117,22 @@ mod tests {
         assert_eq!(result.height, 2);
     }
 
+    fn assert_rotate_twice_is_original<T>(rect: Rectangle<T>)
+    where
+        T: Copy + PartialEq + std::fmt::Debug,
+    {
+        let result = rect.rotate().rotate();
+        assert_eq!(result.width, rect.width);
+        assert_eq!(result.height, rect.height);
+    }
+
     #[test]
     fn test_rotate() {
-        let result = Rectangle::new(2, 3).rotate();
+        let rect = Rectangle::new(2, 3);
+        let result = rect.rotate();
         assert_eq!(result.width, 3);
         assert_eq!(result.height, 2);
+        assert_rotate_twice_is_original(rect);
     }
 
     #[test]
