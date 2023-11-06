@@ -1,9 +1,11 @@
+use crate::area::Area;
+use crate::aspect_ratio::AspectRatio;
+use crate::axis::{Axis, SizeForAxis};
 use crate::component::Component;
-use crate::direction::{Direction, SizeForDirection};
-use crate::dividing::Dividing;
+use crate::dividing::VerticalDividingHelper;
 use crate::point::Point;
-use crate::rectangle::{Area, Rectangle, RectangleSize};
-use crate::rotate::Rotate;
+use crate::rectangle::{Rectangle, RectangleSize};
+use crate::rotate::QuarterRotation;
 
 /// axis aligned starting at x, y and ending at x + width, y + height (left to right, top to bottom)
 #[derive(Debug, PartialEq, Clone)]
@@ -15,12 +17,12 @@ where
     pub rectangle: Rectangle<T>,
 }
 
-impl<T> SizeForDirection<T> for AxisAlignedRectangle<T>
+impl<T> SizeForAxis<T> for AxisAlignedRectangle<T>
 where
     T: Copy,
 {
-    fn size_for_direction(&self, direction: &Direction) -> T {
-        self.rectangle.size_for_direction(direction)
+    fn size_for_axis(&self, axis: Axis) -> T {
+        self.rectangle.size_for_axis(axis)
     }
 }
 
@@ -50,13 +52,79 @@ where
     }
 }
 
-/// A rectangle in 2D space constructor
 impl<T> AxisAlignedRectangle<T>
 where
     T: Copy,
 {
+    /// A rectangle in 2D space constructor
     pub fn new(point: Point<T>, rectangle: Rectangle<T>) -> Self {
         Self { point, rectangle }
+    }
+
+    pub fn rect(&self) -> Rectangle<T> {
+        self.rectangle
+    }
+
+    pub fn origin(&self) -> Point<T> {
+        self.point
+    }
+}
+
+impl<T> AspectRatio<T> for AxisAlignedRectangle<T>
+where
+    T: Copy + std::ops::Div<Output = T>,
+{
+    fn aspect_ratio(&self) -> T {
+        self.rectangle.aspect_ratio()
+    }
+}
+
+#[cfg(test)]
+impl<T> AxisAlignedRectangle<T>
+where
+    T: Copy
+        + std::ops::Sub<Output = T>
+        + std::ops::Add<Output = T>
+        + std::ops::Mul<Output = T>
+        + std::cmp::PartialOrd,
+{
+    pub(crate) fn edges(&self) -> Vec<Point<T>> {
+        vec![
+            self.point,
+            Point::new(self.point.x() + self.rectangle.width(), self.point.y()),
+            Point::new(
+                self.point.x() + self.rectangle.width(),
+                self.point.y() + self.rectangle.height(),
+            ),
+            Point::new(self.point.x(), self.point.y() + self.rectangle.height()),
+        ]
+    }
+
+    pub(crate) fn includes(&self, p: &Point<T>) -> bool {
+        p.x() > self.point.x()
+            && p.x() < self.point.x() + self.rectangle.width()
+            && p.y() > self.point.y()
+            && p.y() < self.point.y() + self.rectangle.height()
+    }
+
+    pub(crate) fn includes_or_on_the_boundary(&self, p: &Point<T>) -> bool {
+        p.x() >= self.point.x()
+            && p.x() <= self.point.x() + self.rectangle.width()
+            && p.y() >= self.point.y()
+            && p.y() <= self.point.y() + self.rectangle.height()
+    }
+
+    pub(crate) fn overlaps(&self, other: &Self) -> bool {
+        // if any of the edges of the other rectangle are inside this rectangle, then they overlap
+        other.edges().iter().any(|p| self.includes(p))
+    }
+
+    pub(crate) fn enclodes(&self, other: &Self) -> bool {
+        // if all of the edges of the other rectangle are inside this rectangle, then they are enclosed
+        other
+            .edges()
+            .iter()
+            .all(|p| self.includes_or_on_the_boundary(p))
     }
 }
 
@@ -68,21 +136,21 @@ impl<T: std::ops::Mul<Output = T> + Copy> Area<T> for AxisAlignedRectangle<T> {
 }
 
 /// Rotate an axis aligned rectangle by 90 degrees
-impl<T: Copy> Rotate for AxisAlignedRectangle<T> {
-    fn rotate(&self) -> Self {
-        Self {
-            point: self.point.rotate(),
-            rectangle: self.rectangle.rotate(),
-        }
+impl<T: Copy> QuarterRotation for AxisAlignedRectangle<T> {
+    fn rotate_clockwise(&self) -> Self {
+        Self::new(
+            Point::new(self.y(), self.x()),
+            Rectangle::new(self.height(), self.width()),
+        )
     }
 }
 
-impl<T> Dividing<T> for AxisAlignedRectangle<T>
+impl<T> VerticalDividingHelper<T> for AxisAlignedRectangle<T>
 where
     T: Copy + std::ops::Sub<Output = T> + std::ops::Add<Output = T>,
 {
     /// dividing a rectangle into two rectangles (vertical)
-    fn divide_vertical(&self, x: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
+    fn divide_vertical_helper(&self, x: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
         (
             Self::new(
                 Point::new(self.x(), self.y()),
@@ -94,25 +162,10 @@ where
             ),
         )
     }
-
-    /// dividing a rectangle into two rectangles (horizontal)
-    fn divide_horizontal(&self, y: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
-        (
-            Self::new(
-                Point::new(self.x(), self.y()),
-                Rectangle::new(self.width(), y),
-            ),
-            Self::new(
-                Point::new(self.x(), self.y() + y),
-                Rectangle::new(self.width(), self.height() - y),
-            ),
-        )
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::direction::Direction;
 
     use super::*;
 
@@ -121,6 +174,8 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
         let result = AxisAlignedRectangle::new(point, rect);
+        assert_eq!(result.origin(), point);
+        assert_eq!(result.rect(), rect);
         assert_eq!(result.x(), 2);
         assert_eq!(result.y(), 3);
         assert_eq!(result.width(), 4);
@@ -131,11 +186,9 @@ mod tests {
     fn test_rotate() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let result = AxisAlignedRectangle::new(point, rect).rotate();
-        assert_eq!(result.x(), 3);
-        assert_eq!(result.y(), 2);
-        assert_eq!(result.width(), 5);
-        assert_eq!(result.height(), 4);
+        let result = AxisAlignedRectangle::new(point, rect).rotate_clockwise();
+        assert_eq!(result.origin(), Point::new(3, 2));
+        assert_eq!(result.rect(), Rectangle::new(5, 4));
     }
 
     #[test]
@@ -147,105 +200,48 @@ mod tests {
     }
 
     #[test]
-    fn test_divide_vertical() {
+    fn test_edges() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_vertical(2);
-        assert_eq!(rect_a.x(), 2);
-        assert_eq!(rect_a.y(), 3);
-        assert_eq!(rect_a.width(), 2);
-        assert_eq!(rect_a.height(), 5);
-        assert_eq!(rect_b.x(), 4);
-        assert_eq!(rect_b.y(), 3);
-        assert_eq!(rect_b.width(), 2);
-        assert_eq!(rect_b.height(), 5);
+        let result = AxisAlignedRectangle::new(point, rect).edges();
+        assert_eq!(result.len(), 4);
+        assert_eq!(result[0], point);
+        assert_eq!(result[1], Point::new(6, 3));
+        assert_eq!(result[2], Point::new(6, 8));
+        assert_eq!(result[3], Point::new(2, 8));
     }
 
     #[test]
-    fn test_divide_horizontal() {
+    fn test_include() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_horizontal(2);
-        assert_eq!(rect_a.x(), 2);
-        assert_eq!(rect_a.y(), 3);
-        assert_eq!(rect_a.width(), 4);
-        assert_eq!(rect_a.height(), 2);
-        assert_eq!(rect_b.x(), 2);
-        assert_eq!(rect_b.y(), 5);
-        assert_eq!(rect_b.width(), 4);
-        assert_eq!(rect_b.height(), 3);
+        let a_rect = AxisAlignedRectangle::new(point, rect);
+        assert!(!a_rect.includes(&Point::new(1, 3)));
+        assert!(!a_rect.includes(&Point::new(7, 3)));
+        assert!(!a_rect.includes(&Point::new(6, 2)));
+        assert!(!a_rect.includes(&Point::new(6, 9)));
     }
 
     #[test]
-    fn test_divide_nth() {
-        // test vertical
+    fn test_overlaps() {
         let point = Point::new(2, 3);
-        let rect = Rectangle::new(6, 2);
+        let rect = Rectangle::new(4, 5);
         let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values(vec![1, 2], &Direction::Vertical);
-        assert_eq!(divided[0].x(), 2);
-        assert_eq!(divided[0].y(), 3);
-        assert_eq!(divided[0].width(), 1);
-        assert_eq!(divided[0].height(), 2);
-        assert_eq!(divided[1].x(), 3);
-        assert_eq!(divided[1].y(), 3);
-        assert_eq!(divided[1].width(), 2);
-        assert_eq!(divided[1].height(), 2);
-        assert_eq!(divided[2].x(), 5);
-        assert_eq!(divided[2].y(), 3);
-        assert_eq!(divided[2].width(), 3);
-        assert_eq!(divided[2].height(), 2);
-        assert_eq!(divided.len(), 3);
-        // sum of divided rectangles should equal original rectangle
-        assert_eq!(
-            divided[0].width() + divided[1].width() + divided[2].width(),
-            a_rect.width()
-        );
-        // all divided rectangles should have the same height
-        assert_eq!(divided[0].height(), a_rect.height());
-        assert_eq!(divided[1].height(), a_rect.height());
-        assert_eq!(divided[2].height(), a_rect.height());
-        // the sum of the x and width of the  divided rectangle should equal the x of the next divided rectangle
-        assert_eq!(divided[0].x() + divided[0].width(), divided[1].x());
-        assert_eq!(divided[1].x() + divided[1].width(), divided[2].x());
-        assert_eq!(
-            a_rect.x() + a_rect.width(),
-            divided[2].x() + divided[2].width()
-        );
-
-        // test horizontal
-        let point = Point::new(2, 3);
-        let rect = Rectangle::new(2, 6);
-        let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values(vec![3, 2], &Direction::Horizontal);
-        assert_eq!(divided[0].x(), 2);
-        assert_eq!(divided[0].y(), 3);
-        assert_eq!(divided[0].width(), 2);
-        assert_eq!(divided[0].height(), 3);
-        assert_eq!(divided[1].x(), 2);
-        assert_eq!(divided[1].y(), 6);
-        assert_eq!(divided[1].width(), 2);
-        assert_eq!(divided[1].height(), 2);
-        assert_eq!(divided[2].x(), 2);
-        assert_eq!(divided[2].y(), 8);
-        assert_eq!(divided[2].width(), 2);
-        assert_eq!(divided[2].height(), 1);
-        assert_eq!(divided.len(), 3);
-        // sum of divided rectangles should equal original rectangle
-        assert_eq!(
-            divided[0].height() + divided[1].height() + divided[2].height(),
-            a_rect.height()
-        );
-        // all divided rectangles should have the same width
-        assert_eq!(divided[0].width(), a_rect.width());
-        assert_eq!(divided[1].width(), a_rect.width());
-        assert_eq!(divided[2].width(), a_rect.width());
-        // the sum of the y and height of the  divided rectangle should equal the y of the next divided rectangle
-        assert_eq!(divided[0].y() + divided[0].height(), divided[1].y());
-        assert_eq!(divided[1].y() + divided[1].height(), divided[2].y());
-        assert_eq!(
-            a_rect.y() + a_rect.height(),
-            divided[2].y() + divided[2].height()
-        );
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 2),
+            Rectangle::new(4, 5)
+        )));
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 4),
+            Rectangle::new(4, 5)
+        )));
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 5),
+            Rectangle::new(4, 5)
+        )));
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 6),
+            Rectangle::new(4, 5)
+        )));
     }
 }

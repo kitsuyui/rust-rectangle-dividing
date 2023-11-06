@@ -1,8 +1,11 @@
+pub(crate) mod area;
+pub(crate) mod aspect_ratio;
+pub mod axis;
 pub mod axis_aligned_rectangle;
-pub mod component;
-pub mod direction;
+pub(crate) mod component;
 pub mod dividing;
 pub mod point;
 pub mod rectangle;
-pub mod rotate;
-pub mod vector;
+pub(crate) mod rotate;
+pub(crate) mod vector;
+pub(crate) mod weight;

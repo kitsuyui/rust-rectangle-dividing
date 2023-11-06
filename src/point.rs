@@ -1,9 +1,9 @@
+use crate::axis::{Axis, ValueForAxis};
 use crate::component::Component;
-use crate::direction::{Direction, ValueForDirection};
-use crate::rotate::Rotate;
+use crate::rotate::QuarterRotation;
 use crate::vector::Vector;
 /// A point in 2D space
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Point<T>
 where
     T: Copy,
@@ -12,14 +12,14 @@ where
     y: T,
 }
 
-impl<T> ValueForDirection<T> for Point<T>
+impl<T> ValueForAxis<T> for Point<T>
 where
     T: Copy,
 {
-    fn value_for_direction(&self, direction: &Direction) -> T {
-        match direction {
-            Direction::Vertical => self.x,
-            Direction::Horizontal => self.y,
+    fn value_for_axis(&self, axis: Axis) -> T {
+        match axis {
+            Axis::Vertical => self.x,
+            Axis::Horizontal => self.y,
         }
     }
 }
@@ -70,11 +70,11 @@ where
 }
 
 /// Rotate a point by 90 degrees
-impl<T> Rotate for Point<T>
+impl<T> QuarterRotation for Point<T>
 where
     T: Copy,
 {
-    fn rotate(&self) -> Self {
+    fn rotate_clockwise(&self) -> Self {
         Point {
             x: self.y,
             y: self.x,
@@ -96,30 +96,46 @@ mod tests {
     #[test]
     fn test_default() {
         let result = Point::<i32>::default();
-        assert_eq!(result.x, 0);
-        assert_eq!(result.y, 0);
+        assert_point_eq(&result, &Point::new(0, 0));
     }
 
     #[test]
-    fn test_value_for_direction() {
+    fn test_value_for_axis() {
         let result = Point::new(2, 3);
-        assert_eq!(result.value_for_direction(&Direction::Vertical), 2);
-        assert_eq!(result.value_for_direction(&Direction::Horizontal), 3);
+        assert_eq!(result.value_for_axis(Axis::Vertical), 2);
+        assert_eq!(result.value_for_axis(Axis::Horizontal), 3);
     }
 
     #[test]
     fn test_sub() {
         let a = Point::new(2, 2);
         let b = Point::new(1, 1);
+        assert_ne!(a, b);
         let result = a - b;
-        assert_eq!(result.x(), 1);
-        assert_eq!(result.y(), 1);
+        assert_eq!(result, Vector::new(1, 1));
     }
 
     #[test]
     fn test_rotate() {
-        let result = Point::new(2, 3).rotate();
-        assert_eq!(result.x, 3);
-        assert_eq!(result.y, 2);
+        let result = Point::new(2, 3).rotate_clockwise();
+        assert_point_eq(&result, &Point::new(3, 2));
+    }
+
+    /// Helper function to assert that two points are equal
+    fn assert_point_eq<T>(p1: &Point<T>, p2: &Point<T>)
+    where
+        T: Copy + PartialEq + std::fmt::Debug,
+    {
+        assert_point_has_same_component_is_equal(p1, p2);
+    }
+
+    /// Assert that two points have the same component values
+    fn assert_point_has_same_component_is_equal<T>(p1: &Point<T>, p2: &Point<T>)
+    where
+        T: Copy + PartialEq + std::fmt::Debug,
+    {
+        assert_eq!(p1.x, p2.x);
+        assert_eq!(p1.y, p2.y);
+        assert_eq!(p1, p2);
     }
 }
