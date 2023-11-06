@@ -1,5 +1,5 @@
+use crate::axis::{Axis, SizeForAxis};
 use crate::component::Component;
-use crate::direction::{Direction, SizeForDirection};
 use crate::dividing::Dividing;
 use crate::point::Point;
 use crate::rectangle::{Area, Rectangle, RectangleSize};
@@ -15,12 +15,12 @@ where
     pub rectangle: Rectangle<T>,
 }
 
-impl<T> SizeForDirection<T> for AxisAlignedRectangle<T>
+impl<T> SizeForAxis<T> for AxisAlignedRectangle<T>
 where
     T: Copy,
 {
-    fn size_for_direction(&self, direction: &Direction) -> T {
-        self.rectangle.size_for_direction(direction)
+    fn size_for_axis(&self, axis: &Axis) -> T {
+        self.rectangle.size_for_axis(axis)
     }
 }
 
@@ -112,7 +112,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::direction::Direction;
+    use crate::axis::Axis;
 
     use super::*;
 
@@ -182,7 +182,7 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(6, 2);
         let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values(vec![1, 2], &Direction::Vertical);
+        let divided = a_rect.divide_by_values(vec![1, 2], &Axis::Vertical);
         assert_eq!(divided[0].x(), 2);
         assert_eq!(divided[0].y(), 3);
         assert_eq!(divided[0].width(), 1);
@@ -217,7 +217,7 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(2, 6);
         let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values(vec![3, 2], &Direction::Horizontal);
+        let divided = a_rect.divide_by_values(vec![3, 2], &Axis::Horizontal);
         assert_eq!(divided[0].x(), 2);
         assert_eq!(divided[0].y(), 3);
         assert_eq!(divided[0].width(), 2);

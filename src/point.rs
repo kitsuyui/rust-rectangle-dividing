@@ -1,5 +1,5 @@
+use crate::axis::{Axis, ValueForAxis};
 use crate::component::Component;
-use crate::direction::{Direction, ValueForDirection};
 use crate::rotate::Rotate;
 use crate::vector::Vector;
 /// A point in 2D space
@@ -12,14 +12,14 @@ where
     y: T,
 }
 
-impl<T> ValueForDirection<T> for Point<T>
+impl<T> ValueForAxis<T> for Point<T>
 where
     T: Copy,
 {
-    fn value_for_direction(&self, direction: &Direction) -> T {
-        match direction {
-            Direction::Vertical => self.x,
-            Direction::Horizontal => self.y,
+    fn value_for_axis(&self, axis: &Axis) -> T {
+        match axis {
+            Axis::Vertical => self.x,
+            Axis::Horizontal => self.y,
         }
     }
 }
@@ -101,10 +101,10 @@ mod tests {
     }
 
     #[test]
-    fn test_value_for_direction() {
+    fn test_value_for_axis() {
         let result = Point::new(2, 3);
-        assert_eq!(result.value_for_direction(&Direction::Vertical), 2);
-        assert_eq!(result.value_for_direction(&Direction::Horizontal), 3);
+        assert_eq!(result.value_for_axis(&Axis::Vertical), 2);
+        assert_eq!(result.value_for_axis(&Axis::Horizontal), 3);
     }
 
     #[test]

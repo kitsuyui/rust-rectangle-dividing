@@ -1,4 +1,4 @@
-use crate::direction::{Direction, SizeForDirection};
+use crate::axis::{Axis, SizeForAxis};
 use crate::dividing::Dividing;
 use crate::rotate::Rotate;
 /// rectangle in 2D space with a width and height
@@ -12,14 +12,14 @@ where
     height: T,
 }
 
-impl<T> SizeForDirection<T> for Rectangle<T>
+impl<T> SizeForAxis<T> for Rectangle<T>
 where
     T: Copy,
 {
-    fn size_for_direction(&self, direction: &Direction) -> T {
-        match direction {
-            Direction::Vertical => self.width,
-            Direction::Horizontal => self.height,
+    fn size_for_axis(&self, axis: &Axis) -> T {
+        match axis {
+            Axis::Vertical => self.width,
+            Axis::Horizontal => self.height,
         }
     }
 }
@@ -106,7 +106,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::direction::Direction;
+    use crate::axis::Axis;
 
     use super::*;
 
@@ -150,13 +150,13 @@ mod tests {
 
     #[test]
     fn test_divide() {
-        let (rect_a, rect_b) = Rectangle::new(4, 2).divide(1, &Direction::Vertical);
+        let (rect_a, rect_b) = Rectangle::new(4, 2).divide(1, &Axis::Vertical);
         assert_eq!(rect_a.width, 1);
         assert_eq!(rect_a.height, 2);
         assert_eq!(rect_b.width, 3);
         assert_eq!(rect_b.height, 2);
 
-        let (rect_a, rect_b) = Rectangle::new(2, 4).divide(1, &Direction::Horizontal);
+        let (rect_a, rect_b) = Rectangle::new(2, 4).divide(1, &Axis::Horizontal);
         assert_eq!(rect_a.width, 2);
         assert_eq!(rect_a.height, 1);
         assert_eq!(rect_b.width, 2);
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn test_divide_nth() {
         let rect = Rectangle::new(6, 2);
-        let divided = rect.divide_by_values(vec![1, 2], &Direction::Vertical);
+        let divided = rect.divide_by_values(vec![1, 2], &Axis::Vertical);
         assert_eq!(divided[0].width, 1);
         assert_eq!(divided[0].height, 2);
         assert_eq!(divided[1].width, 2);
@@ -175,7 +175,7 @@ mod tests {
         assert_eq!(divided[2].height, 2);
 
         let rect = Rectangle::new(2, 6);
-        let divided = rect.divide_by_values(vec![3, 2], &Direction::Horizontal);
+        let divided = rect.divide_by_values(vec![3, 2], &Axis::Horizontal);
         assert_eq!(divided[0].width, 2);
         assert_eq!(divided[0].height, 3);
         assert_eq!(divided[1].width, 2);
@@ -188,10 +188,10 @@ mod tests {
     fn test_divide_by_weights() {
         let rect = Rectangle::new(6, 2);
         // values
-        let divided1 = rect.divide_by_values(vec![1, 2], &Direction::Vertical);
+        let divided1 = rect.divide_by_values(vec![1, 2], &Axis::Vertical);
 
         let rect = Rectangle::new(6, 2);
-        let divided2 = rect.divide_by_weights(vec![2, 4, 6], &Direction::Vertical);
+        let divided2 = rect.divide_by_weights(vec![2, 4, 6], &Axis::Vertical);
         assert_eq!(divided1, divided2);
     }
 }

@@ -1,5 +1,5 @@
+use crate::axis::{Axis, ValueForAxis};
 use crate::component::Component;
-use crate::direction::{Direction, ValueForDirection};
 
 /// A simple 2D vector
 #[derive(Debug, PartialEq, Clone)]
@@ -33,14 +33,14 @@ where
     }
 }
 
-impl<T> ValueForDirection<T> for Vector<T>
+impl<T> ValueForAxis<T> for Vector<T>
 where
     T: Copy,
 {
-    fn value_for_direction(&self, direction: &Direction) -> T {
-        match direction {
-            Direction::Vertical => self.x,
-            Direction::Horizontal => self.y,
+    fn value_for_axis(&self, axis: &Axis) -> T {
+        match axis {
+            Axis::Vertical => self.x,
+            Axis::Horizontal => self.y,
         }
     }
 }

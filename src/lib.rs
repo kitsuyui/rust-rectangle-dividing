@@ -1,6 +1,6 @@
+pub mod axis;
 pub mod axis_aligned_rectangle;
 pub mod component;
-pub mod direction;
 pub mod dividing;
 pub mod point;
 pub mod rectangle;
