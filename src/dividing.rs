@@ -157,16 +157,23 @@ mod tests {
         let weights = vec![1.0, 1.0, 1.0, 1.0];
         let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0);
         assert_weights_dividing(&rect, &divided, &weights);
-        assert_eq!(divided.len(), 4);
         assert_eq!(divided[0], Rectangle::new(50.0, 50.0));
         assert_eq!(divided[1], Rectangle::new(50.0, 50.0));
         assert_eq!(divided[2], Rectangle::new(50.0, 50.0));
         assert_eq!(divided[3], Rectangle::new(50.0, 50.0));
 
+        // not divided case
+        let rect = Rectangle::new(100.0, 100.0);
+        let weights = vec![1.0];
+        let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0);
+        assert_weights_dividing(&rect, &divided, &weights);
+        assert_eq!(divided[0], rect);
+
         let rect = AxisAlignedRectangle::new(Point::new(0.0, 0.0), Rectangle::new(100.0, 100.0));
         let weights = vec![1.0, 1.0, 1.0, 1.0];
         let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0);
-        assert_eq!(divided.len(), 4);
+        assert_weights_dividing(&rect, &divided, &weights);
+        assert_weights_dividing_no_overlaps(&rect, &divided);
         assert_eq!(
             divided[0],
             AxisAlignedRectangle::new(Point::new(0.0, 0.0), Rectangle::new(50.0, 50.0))
@@ -183,6 +190,14 @@ mod tests {
             divided[3],
             AxisAlignedRectangle::new(Point::new(50.0, 50.0), Rectangle::new(50.0, 50.0))
         );
+
+        // not divided case
+        let rect = AxisAlignedRectangle::new(Point::new(0.0, 0.0), Rectangle::new(100.0, 100.0));
+        let weights = vec![1.0];
+        let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0);
+        assert_weights_dividing(&rect, &divided, &weights);
+        assert_weights_dividing_no_overlaps(&rect, &divided);
+        assert_eq!(divided[0], rect);
     }
 
     fn assert_weights_dividing<T, D>(original: &D, divided: &[D], weights: &[T])
@@ -197,6 +212,9 @@ mod tests {
             + std::ops::Div<Output = T>
             + std::ops::Mul<Output = T>,
     {
+        // check that the number of divided rectangles is equal to the number of weights
+        assert_eq!(divided.len(), weights.len());
+
         // check that the sum of divided areas is equal to the original area
         let original_area = original.area();
         let divided_area: T = divided.iter().map(|r| r.area()).sum();
@@ -207,5 +225,32 @@ mod tests {
         let divided_areas: Vec<T> = divided.iter().map(|r| r.area()).collect();
         let divided_area_by_weights = normalize_weights(&divided_areas);
         assert_eq!(original_normalized_weights, divided_area_by_weights);
+    }
+
+    fn assert_weights_dividing_no_overlaps<T>(
+        original: &AxisAlignedRectangle<T>,
+        divided: &[AxisAlignedRectangle<T>],
+    ) where
+        T: Copy
+            + std::fmt::Debug
+            + std::cmp::PartialEq
+            + std::ops::Add<Output = T>
+            + std::iter::Sum<T>
+            + for<'a> std::iter::Sum<&'a T>
+            + std::ops::Div<Output = T>
+            + std::ops::Sub<Output = T>
+            + std::ops::Mul<Output = T>
+            + std::cmp::PartialOrd,
+    {
+        // check all divided rectangles are inside the original rectangle
+        for i in 0..divided.len() {
+            assert!(original.enclodes(&divided[i]));
+        }
+        // check no overlap between divided rectangles
+        for i in 0..divided.len() {
+            for j in i + 1..divided.len() {
+                assert!(!divided[i].overlaps(&divided[j]));
+            }
+        }
     }
 }

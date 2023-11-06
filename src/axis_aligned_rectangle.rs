@@ -50,11 +50,11 @@ where
     }
 }
 
-/// A rectangle in 2D space constructor
 impl<T> AxisAlignedRectangle<T>
 where
     T: Copy,
 {
+    /// A rectangle in 2D space constructor
     pub fn new(point: Point<T>, rectangle: Rectangle<T>) -> Self {
         Self { point, rectangle }
     }
@@ -65,6 +65,55 @@ where
 
     pub fn origin(&self) -> Point<T> {
         self.point
+    }
+}
+
+#[cfg(test)]
+impl<T> AxisAlignedRectangle<T>
+where
+    T: Copy
+        + std::ops::Sub<Output = T>
+        + std::ops::Add<Output = T>
+        + std::ops::Mul<Output = T>
+        + std::cmp::PartialOrd,
+{
+    pub(crate) fn edges(&self) -> Vec<Point<T>> {
+        vec![
+            self.point,
+            Point::new(self.point.x() + self.rectangle.width(), self.point.y()),
+            Point::new(
+                self.point.x() + self.rectangle.width(),
+                self.point.y() + self.rectangle.height(),
+            ),
+            Point::new(self.point.x(), self.point.y() + self.rectangle.height()),
+        ]
+    }
+
+    pub(crate) fn includes(&self, p: &Point<T>) -> bool {
+        p.x() > self.point.x()
+            && p.x() < self.point.x() + self.rectangle.width()
+            && p.y() > self.point.y()
+            && p.y() < self.point.y() + self.rectangle.height()
+    }
+
+    pub(crate) fn includes_or_on_the_boundary(&self, p: &Point<T>) -> bool {
+        p.x() >= self.point.x()
+            && p.x() <= self.point.x() + self.rectangle.width()
+            && p.y() >= self.point.y()
+            && p.y() <= self.point.y() + self.rectangle.height()
+    }
+
+    pub(crate) fn overlaps(&self, other: &Self) -> bool {
+        // if any of the edges of the other rectangle are inside this rectangle, then they overlap
+        other.edges().iter().any(|p| self.includes(p))
+    }
+
+    pub(crate) fn enclodes(&self, other: &Self) -> bool {
+        // if all of the edges of the other rectangle are inside this rectangle, then they are enclosed
+        other
+            .edges()
+            .iter()
+            .all(|p| self.includes_or_on_the_boundary(p))
     }
 }
 
@@ -238,5 +287,51 @@ mod tests {
             a_rect.y() + a_rect.height(),
             divided[2].y() + divided[2].height()
         );
+    }
+
+    #[test]
+    fn test_edges() {
+        let point = Point::new(2, 3);
+        let rect = Rectangle::new(4, 5);
+        let result = AxisAlignedRectangle::new(point, rect).edges();
+        assert_eq!(result.len(), 4);
+        assert_eq!(result[0], point);
+        assert_eq!(result[1], Point::new(6, 3));
+        assert_eq!(result[2], Point::new(6, 8));
+        assert_eq!(result[3], Point::new(2, 8));
+    }
+
+    #[test]
+    fn test_include() {
+        let point = Point::new(2, 3);
+        let rect = Rectangle::new(4, 5);
+        let a_rect = AxisAlignedRectangle::new(point, rect);
+        assert!(!a_rect.includes(&Point::new(1, 3)));
+        assert!(!a_rect.includes(&Point::new(7, 3)));
+        assert!(!a_rect.includes(&Point::new(6, 2)));
+        assert!(!a_rect.includes(&Point::new(6, 9)));
+    }
+
+    #[test]
+    fn test_overlaps() {
+        let point = Point::new(2, 3);
+        let rect = Rectangle::new(4, 5);
+        let a_rect = AxisAlignedRectangle::new(point, rect);
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 2),
+            Rectangle::new(4, 5)
+        )));
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 4),
+            Rectangle::new(4, 5)
+        )));
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 5),
+            Rectangle::new(4, 5)
+        )));
+        assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
+            Point::new(1, 6),
+            Rectangle::new(4, 5)
+        )));
     }
 }
