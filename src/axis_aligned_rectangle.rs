@@ -1,6 +1,6 @@
 use crate::axis::{Axis, SizeForAxis};
 use crate::component::Component;
-use crate::dividing::Dividing;
+use crate::dividing::VerticalDividingHelper;
 use crate::point::Point;
 use crate::rectangle::{Area, Rectangle, RectangleSize};
 use crate::rotate::Rotate;
@@ -85,12 +85,12 @@ impl<T: Copy> Rotate for AxisAlignedRectangle<T> {
     }
 }
 
-impl<T> Dividing<T> for AxisAlignedRectangle<T>
+impl<T> VerticalDividingHelper<T> for AxisAlignedRectangle<T>
 where
     T: Copy + std::ops::Sub<Output = T> + std::ops::Add<Output = T>,
 {
     /// dividing a rectangle into two rectangles (vertical)
-    fn divide_vertical(&self, x: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
+    fn divide_vertical_helper(&self, x: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
         (
             Self::new(
                 Point::new(self.x(), self.y()),
@@ -102,25 +102,12 @@ where
             ),
         )
     }
-
-    /// dividing a rectangle into two rectangles (horizontal)
-    fn divide_horizontal(&self, y: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
-        (
-            Self::new(
-                Point::new(self.x(), self.y()),
-                Rectangle::new(self.width(), y),
-            ),
-            Self::new(
-                Point::new(self.x(), self.y() + y),
-                Rectangle::new(self.width(), self.height() - y),
-            ),
-        )
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::axis::Axis;
+    use crate::dividing::Dividing;
 
     use super::*;
 

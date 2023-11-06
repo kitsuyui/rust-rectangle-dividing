@@ -1,6 +1,7 @@
 use crate::{
     axis::{Axis, SizeForAxis},
     rectangle::RectangleSize,
+    rotate::Rotate,
 };
 
 pub trait Dividing<T> {
@@ -58,5 +59,28 @@ pub trait Dividing<T> {
         // last value is not used
         let values = values[0..values.len() - 1].to_vec();
         self.divide_by_values(values, axis)
+    }
+}
+
+pub(crate) trait VerticalDividingHelper<T> {
+    fn divide_vertical_helper(&self, x: T) -> (Self, Self)
+    where
+        Self: Sized;
+}
+
+impl<T, U> Dividing<T> for U
+where
+    U: Rotate + VerticalDividingHelper<T>,
+    T: Copy,
+{
+    fn divide_vertical(&self, x: T) -> (Self, Self) {
+        self.divide_vertical_helper(x)
+    }
+
+    fn divide_horizontal(&self, y: T) -> (Self, Self) {
+        // rotate, divide vertical, rotate back again means divide horizontal
+        let rotated = self.rotate();
+        let (a, b) = rotated.divide_vertical(y);
+        (a.rotate(), b.rotate())
     }
 }

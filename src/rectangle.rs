@@ -1,5 +1,5 @@
 use crate::axis::{Axis, SizeForAxis};
-use crate::dividing::Dividing;
+use crate::dividing::VerticalDividingHelper;
 use crate::rotate::Rotate;
 /// rectangle in 2D space with a width and height
 
@@ -83,23 +83,15 @@ where
     }
 }
 
-impl<T> Dividing<T> for Rectangle<T>
+impl<T> VerticalDividingHelper<T> for Rectangle<T>
 where
     T: Copy + std::ops::Sub<Output = T>,
 {
     /// dividing a rectangle into two rectangles (vertical)
-    fn divide_vertical(&self, x: T) -> (Rectangle<T>, Rectangle<T>) {
+    fn divide_vertical_helper(&self, x: T) -> (Rectangle<T>, Rectangle<T>) {
         (
             Self::new(x, self.height),
             Self::new(self.width - x, self.height),
-        )
-    }
-
-    /// dividing a rectangle into two rectangles (horizontal)
-    fn divide_horizontal(&self, y: T) -> (Rectangle<T>, Rectangle<T>) {
-        (
-            Self::new(self.width, y),
-            Self::new(self.width, self.height - y),
         )
     }
 }
@@ -107,6 +99,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::axis::Axis;
+    use crate::dividing::Dividing;
 
     use super::*;
 
