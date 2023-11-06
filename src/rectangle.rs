@@ -16,7 +16,7 @@ impl<T> SizeForAxis<T> for Rectangle<T>
 where
     T: Copy,
 {
-    fn size_for_axis(&self, axis: &Axis) -> T {
+    fn size_for_axis(&self, axis: Axis) -> T {
         match axis {
             Axis::Vertical => self.width,
             Axis::Horizontal => self.height,
@@ -144,11 +144,11 @@ mod tests {
 
     #[test]
     fn test_divide() {
-        let (rect_a, rect_b) = Rectangle::new(4, 2).divide(1, &Axis::Vertical);
+        let (rect_a, rect_b) = Rectangle::new(4, 2).divide(1, Axis::Vertical);
         assert_rect_eq(&rect_a, &Rectangle::new(1, 2));
         assert_rect_eq(&rect_b, &Rectangle::new(3, 2));
 
-        let (rect_a, rect_b) = Rectangle::new(2, 4).divide(1, &Axis::Horizontal);
+        let (rect_a, rect_b) = Rectangle::new(2, 4).divide(1, Axis::Horizontal);
         assert_rect_eq(&rect_a, &Rectangle::new(2, 1));
         assert_rect_eq(&rect_b, &Rectangle::new(2, 3));
     }
@@ -156,13 +156,13 @@ mod tests {
     #[test]
     fn test_divide_nth() {
         let rect = Rectangle::new(6, 2);
-        let divided = rect.divide_by_values_and_axis(&vec![1, 2], &Axis::Vertical);
+        let divided = rect.divide_by_values_and_axis(&vec![1, 2], Axis::Vertical);
         assert_rect_eq(&divided[0], &Rectangle::new(1, 2));
         assert_rect_eq(&divided[1], &Rectangle::new(2, 2));
         assert_rect_eq(&divided[2], &Rectangle::new(3, 2));
 
         let rect = Rectangle::new(2, 6);
-        let divided = rect.divide_by_values_and_axis(&vec![3, 2], &Axis::Horizontal);
+        let divided = rect.divide_by_values_and_axis(&vec![3, 2], Axis::Horizontal);
         assert_rect_eq(&divided[0], &Rectangle::new(2, 3));
         assert_rect_eq(&divided[1], &Rectangle::new(2, 2));
         assert_rect_eq(&divided[2], &Rectangle::new(2, 1));
@@ -172,10 +172,10 @@ mod tests {
     fn test_divide_by_weights() {
         let rect = Rectangle::new(6, 2);
         // values
-        let divided1 = rect.divide_by_values_and_axis(&vec![1, 2], &Axis::Vertical);
+        let divided1 = rect.divide_by_values_and_axis(&vec![1, 2], Axis::Vertical);
 
         let rect = Rectangle::new(6, 2);
-        let divided2 = rect.divide_by_weights_and_axis(&vec![2, 4, 6], &Axis::Vertical);
+        let divided2 = rect.divide_by_weights_and_axis(&vec![2, 4, 6], Axis::Vertical);
         assert_eq!(divided1, divided2);
     }
 

@@ -37,7 +37,7 @@ impl<T> ValueForAxis<T> for Vector<T>
 where
     T: Copy,
 {
-    fn value_for_axis(&self, axis: &Axis) -> T {
+    fn value_for_axis(&self, axis: Axis) -> T {
         match axis {
             Axis::Vertical => self.x,
             Axis::Horizontal => self.y,

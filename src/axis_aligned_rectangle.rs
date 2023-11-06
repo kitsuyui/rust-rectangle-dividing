@@ -19,7 +19,7 @@ impl<T> SizeForAxis<T> for AxisAlignedRectangle<T>
 where
     T: Copy,
 {
-    fn size_for_axis(&self, axis: &Axis) -> T {
+    fn size_for_axis(&self, axis: Axis) -> T {
         self.rectangle.size_for_axis(axis)
     }
 }
@@ -185,7 +185,7 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(6, 2);
         let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values_and_axis(&vec![1, 2], &Axis::Vertical);
+        let divided = a_rect.divide_by_values_and_axis(&vec![1, 2], Axis::Vertical);
         assert_eq!(divided[0].origin(), point);
         assert_eq!(divided[0].rect(), Rectangle::new(1, 2));
         assert_eq!(divided[1].origin(), Point::new(3, 3));
@@ -214,7 +214,7 @@ mod tests {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(2, 6);
         let a_rect = AxisAlignedRectangle::new(point, rect);
-        let divided = a_rect.divide_by_values_and_axis(&vec![3, 2], &Axis::Horizontal);
+        let divided = a_rect.divide_by_values_and_axis(&vec![3, 2], Axis::Horizontal);
         assert_eq!(divided[0].origin(), point);
         assert_eq!(divided[0].rect(), Rectangle::new(2, 3));
         assert_eq!(divided[1].origin(), Point::new(2, 6));

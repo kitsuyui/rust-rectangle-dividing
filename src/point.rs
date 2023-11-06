@@ -16,7 +16,7 @@ impl<T> ValueForAxis<T> for Point<T>
 where
     T: Copy,
 {
-    fn value_for_axis(&self, axis: &Axis) -> T {
+    fn value_for_axis(&self, axis: Axis) -> T {
         match axis {
             Axis::Vertical => self.x,
             Axis::Horizontal => self.y,
@@ -102,8 +102,8 @@ mod tests {
     #[test]
     fn test_value_for_axis() {
         let result = Point::new(2, 3);
-        assert_eq!(result.value_for_axis(&Axis::Vertical), 2);
-        assert_eq!(result.value_for_axis(&Axis::Horizontal), 3);
+        assert_eq!(result.value_for_axis(Axis::Vertical), 2);
+        assert_eq!(result.value_for_axis(Axis::Horizontal), 3);
     }
 
     #[test]

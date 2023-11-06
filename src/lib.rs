@@ -6,3 +6,4 @@ pub mod point;
 pub mod rectangle;
 pub mod rotate;
 pub mod vector;
+pub mod weight;
