@@ -1,6 +1,6 @@
 use crate::axis::{Axis, SizeForAxis};
 use crate::dividing::VerticalDividingHelper;
-use crate::rotate::Rotate;
+use crate::rotate::QuarterRotation;
 /// rectangle in 2D space with a width and height
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -71,11 +71,11 @@ where
 }
 
 /// Rotate a rectangle by 90 degrees
-impl<T> Rotate for Rectangle<T>
+impl<T> QuarterRotation for Rectangle<T>
 where
     T: Copy,
 {
-    fn rotate(&self) -> Self {
+    fn rotate_clockwise(&self) -> Self {
         Self {
             width: self.height,
             height: self.width,
@@ -199,7 +199,7 @@ mod tests {
     where
         T: Copy + PartialEq + std::fmt::Debug,
     {
-        let rotated_twice = rect.rotate().rotate();
+        let rotated_twice = rect.rotate_clockwise().rotate_clockwise();
         assert_rect_has_same_component_is_equal(rect, &rotated_twice);
         assert_eq!(rotated_twice, *rect);
     }

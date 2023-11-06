@@ -3,7 +3,7 @@ use crate::component::Component;
 use crate::dividing::VerticalDividingHelper;
 use crate::point::Point;
 use crate::rectangle::{Area, Rectangle, RectangleSize};
-use crate::rotate::Rotate;
+use crate::rotate::QuarterRotation;
 
 /// axis aligned starting at x, y and ending at x + width, y + height (left to right, top to bottom)
 #[derive(Debug, PartialEq, Clone)]
@@ -76,8 +76,8 @@ impl<T: std::ops::Mul<Output = T> + Copy> Area<T> for AxisAlignedRectangle<T> {
 }
 
 /// Rotate an axis aligned rectangle by 90 degrees
-impl<T: Copy> Rotate for AxisAlignedRectangle<T> {
-    fn rotate(&self) -> Self {
+impl<T: Copy> QuarterRotation for AxisAlignedRectangle<T> {
+    fn rotate_clockwise(&self) -> Self {
         Self::new(
             Point::new(self.y(), self.x()),
             Rectangle::new(self.height(), self.width()),
@@ -128,7 +128,7 @@ mod tests {
     fn test_rotate() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let result = AxisAlignedRectangle::new(point, rect).rotate();
+        let result = AxisAlignedRectangle::new(point, rect).rotate_clockwise();
         assert_eq!(result.origin(), Point::new(3, 2));
         assert_eq!(result.rect(), Rectangle::new(5, 4));
     }
@@ -150,10 +150,26 @@ mod tests {
         assert_eq!(rect_a.rect(), Rectangle::new(2, 5));
         assert_eq!(rect_b.origin(), Point::new(4, 3));
         assert_eq!(rect_b.rect(), Rectangle::new(2, 5));
+
+        let point = Point::new(2, 3);
+        let rect = Rectangle::new(4, 5);
+        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_vertical(1);
+        assert_eq!(rect_a.origin(), point);
+        assert_eq!(rect_a.rect(), Rectangle::new(1, 5));
+        assert_eq!(rect_b.origin(), Point::new(3, 3));
+        assert_eq!(rect_b.rect(), Rectangle::new(3, 5));
     }
 
     #[test]
     fn test_divide_horizontal() {
+        let point = Point::new(2, 3);
+        let rect = Rectangle::new(4, 5);
+        let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_horizontal(1);
+        assert_eq!(rect_a.origin(), point);
+        assert_eq!(rect_a.rect(), Rectangle::new(4, 1));
+        assert_eq!(rect_b.origin(), Point::new(2, 4));
+        assert_eq!(rect_b.rect(), Rectangle::new(4, 4));
+
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
         let (rect_a, rect_b) = AxisAlignedRectangle::new(point, rect).divide_horizontal(2);

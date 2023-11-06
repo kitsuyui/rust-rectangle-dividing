@@ -1,7 +1,7 @@
 use crate::{
     axis::{Axis, SizeForAxis},
     rectangle::RectangleSize,
-    rotate::Rotate,
+    rotate::QuarterRotation,
 };
 
 pub trait Dividing<T> {
@@ -70,7 +70,7 @@ pub(crate) trait VerticalDividingHelper<T> {
 
 impl<T, U> Dividing<T> for U
 where
-    U: Rotate + VerticalDividingHelper<T>,
+    U: QuarterRotation + VerticalDividingHelper<T>,
     T: Copy,
 {
     fn divide_vertical(&self, x: T) -> (Self, Self) {
@@ -79,8 +79,8 @@ where
 
     fn divide_horizontal(&self, y: T) -> (Self, Self) {
         // rotate, divide vertical, rotate back again means divide horizontal
-        let rotated = self.rotate();
+        let rotated = self.rotate_clockwise();
         let (a, b) = rotated.divide_vertical(y);
-        (a.rotate(), b.rotate())
+        (a.rotate_counter_clockwise(), b.rotate_counter_clockwise())
     }
 }

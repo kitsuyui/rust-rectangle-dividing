@@ -1,6 +1,6 @@
 use crate::axis::{Axis, ValueForAxis};
 use crate::component::Component;
-use crate::rotate::Rotate;
+use crate::rotate::QuarterRotation;
 use crate::vector::Vector;
 /// A point in 2D space
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -70,11 +70,11 @@ where
 }
 
 /// Rotate a point by 90 degrees
-impl<T> Rotate for Point<T>
+impl<T> QuarterRotation for Point<T>
 where
     T: Copy,
 {
-    fn rotate(&self) -> Self {
+    fn rotate_clockwise(&self) -> Self {
         Point {
             x: self.y,
             y: self.x,
@@ -117,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_rotate() {
-        let result = Point::new(2, 3).rotate();
+        let result = Point::new(2, 3).rotate_clockwise();
         assert_point_eq(&result, &Point::new(3, 2));
     }
 
