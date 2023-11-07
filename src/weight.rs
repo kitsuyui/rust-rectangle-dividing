@@ -1,13 +1,9 @@
+use num_traits::{Num, NumAssignOps, NumOps};
 // weights are just Vec<T>
 
-#[cfg(test)]
 pub(crate) fn normalize_weights<T>(weights: &[T]) -> Vec<T>
 where
-    T: Copy
-        + std::ops::Div<Output = T>
-        + std::iter::Sum<T>
-        + std::ops::Div<Output = T>
-        + for<'a> std::iter::Sum<&'a T>,
+    T: Copy + Num + NumAssignOps + NumOps + for<'a> std::iter::Sum<&'a T>,
 {
     let sum: T = weights.iter().sum();
     weights.iter().map(|w| *w / sum).collect()

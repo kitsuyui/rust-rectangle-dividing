@@ -1,9 +1,11 @@
+use num_traits::{Float, Num, NumAssignOps, NumOps};
+
 use crate::area::Area;
 use crate::aspect_ratio::AspectRatio;
 use crate::axis::{Axis, SizeForAxis};
 use crate::component::Component;
 use crate::dividing::VerticalDividingHelper;
-use crate::point::Point;
+use crate::point::{Edge, Point};
 use crate::rectangle::{Rectangle, RectangleSize};
 use crate::rotate::QuarterRotation;
 
@@ -11,15 +13,29 @@ use crate::rotate::QuarterRotation;
 #[derive(Debug, PartialEq, Clone)]
 pub struct AxisAlignedRectangle<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     pub point: Point<T>,
     pub rectangle: Rectangle<T>,
 }
 
+impl<T> AxisAlignedRectangle<T>
+where
+    T: Copy + Num + NumAssignOps + NumOps + PartialOrd + Float,
+{
+    pub fn round(&self) -> Self {
+        let p1 = self.edge_left_top().round(Edge::RightBottom);
+        let p2 = self.edge_right_bottom().round(Edge::LeftTop);
+        let width = p2.x() - p1.x();
+        let height = p2.y() - p1.y();
+        let rect = Rectangle::new(width, height);
+        Self::new(&p1, &rect)
+    }
+}
+
 impl<T> SizeForAxis<T> for AxisAlignedRectangle<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps,
 {
     fn size_for_axis(&self, axis: Axis) -> T {
         self.rectangle.size_for_axis(axis)
@@ -29,7 +45,7 @@ where
 /// A rectangle in 2D space with a width and height
 impl<T> RectangleSize<T> for AxisAlignedRectangle<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     fn width(&self) -> T {
         self.rectangle.width()
@@ -41,7 +57,7 @@ where
 
 impl<T> Component<T> for AxisAlignedRectangle<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     fn x(&self) -> T {
         self.point.x()
@@ -54,11 +70,14 @@ where
 
 impl<T> AxisAlignedRectangle<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     /// A rectangle in 2D space constructor
-    pub fn new(point: Point<T>, rectangle: Rectangle<T>) -> Self {
-        Self { point, rectangle }
+    pub fn new(point: &Point<T>, rectangle: &Rectangle<T>) -> Self {
+        Self {
+            point: *point,
+            rectangle: *rectangle,
+        }
     }
 
     pub fn rect(&self) -> Rectangle<T> {
@@ -70,33 +89,56 @@ where
     }
 }
 
+impl<T> AxisAlignedRectangle<T>
+where
+    T: Copy + Num + NumAssignOps + NumOps + Float,
+{
+    pub fn from_two_point(p1: &Point<T>, p2: &Point<T>) -> Self {
+        let vec = *p1 - *p2;
+        let width = vec.x().abs();
+        let height = vec.y().abs();
+        let rect = Rectangle::new(width, height);
+
+        Self::new(p1, &rect)
+    }
+}
+
 impl<T> AspectRatio<T> for AxisAlignedRectangle<T>
 where
-    T: Copy + std::ops::Div<Output = T>,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     fn aspect_ratio(&self) -> T {
         self.rectangle.aspect_ratio()
     }
 }
 
-#[cfg(test)]
 impl<T> AxisAlignedRectangle<T>
 where
-    T: Copy
-        + std::ops::Sub<Output = T>
-        + std::ops::Add<Output = T>
-        + std::ops::Mul<Output = T>
-        + std::cmp::PartialOrd,
+    T: Copy + Num + NumAssignOps + NumOps + PartialOrd,
 {
+    pub(crate) fn edge_left_top(&self) -> Point<T> {
+        self.point
+    }
+    pub(crate) fn edge_right_top(&self) -> Point<T> {
+        Point::new(self.point.x() + self.rectangle.width(), self.point.y())
+    }
+    pub(crate) fn edge_left_bottom(&self) -> Point<T> {
+        Point::new(self.point.x(), self.point.y() + self.rectangle.height())
+    }
+    pub(crate) fn edge_right_bottom(&self) -> Point<T> {
+        Point::new(
+            self.point.x() + self.rectangle.width(),
+            self.point.y() + self.rectangle.height(),
+        )
+    }
+
+    #[allow(dead_code)]
     pub(crate) fn edges(&self) -> Vec<Point<T>> {
         vec![
-            self.point,
-            Point::new(self.point.x() + self.rectangle.width(), self.point.y()),
-            Point::new(
-                self.point.x() + self.rectangle.width(),
-                self.point.y() + self.rectangle.height(),
-            ),
-            Point::new(self.point.x(), self.point.y() + self.rectangle.height()),
+            self.edge_left_top(),
+            self.edge_right_top(),
+            self.edge_right_bottom(),
+            self.edge_left_bottom(),
         ]
     }
 
@@ -129,36 +171,42 @@ where
 }
 
 /// area of an axis aligned rectangle
-impl<T: std::ops::Mul<Output = T> + Copy> Area<T> for AxisAlignedRectangle<T> {
+impl<T> Area<T> for AxisAlignedRectangle<T>
+where
+    T: Copy + Num + NumAssignOps,
+{
     fn area(&self) -> T {
         self.rectangle.area()
     }
 }
 
 /// Rotate an axis aligned rectangle by 90 degrees
-impl<T: Copy> QuarterRotation for AxisAlignedRectangle<T> {
+impl<T> QuarterRotation for AxisAlignedRectangle<T>
+where
+    T: Copy + Num + NumAssignOps,
+{
     fn rotate_clockwise(&self) -> Self {
         Self::new(
-            Point::new(self.y(), self.x()),
-            Rectangle::new(self.height(), self.width()),
+            &Point::new(self.y(), self.x()),
+            &Rectangle::new(self.height(), self.width()),
         )
     }
 }
 
 impl<T> VerticalDividingHelper<T> for AxisAlignedRectangle<T>
 where
-    T: Copy + std::ops::Sub<Output = T> + std::ops::Add<Output = T>,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     /// dividing a rectangle into two rectangles (vertical)
     fn divide_vertical_helper(&self, x: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
         (
             Self::new(
-                Point::new(self.x(), self.y()),
-                Rectangle::new(x, self.height()),
+                &Point::new(self.x(), self.y()),
+                &Rectangle::new(x, self.height()),
             ),
             Self::new(
-                Point::new(self.x() + x, self.y()),
-                Rectangle::new(self.width() - x, self.height()),
+                &Point::new(self.x() + x, self.y()),
+                &Rectangle::new(self.width() - x, self.height()),
             ),
         )
     }
@@ -173,7 +221,7 @@ mod tests {
     fn test_new() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let result = AxisAlignedRectangle::new(point, rect);
+        let result = AxisAlignedRectangle::new(&point, &rect);
         assert_eq!(result.origin(), point);
         assert_eq!(result.rect(), rect);
         assert_eq!(result.x(), 2);
@@ -186,7 +234,7 @@ mod tests {
     fn test_rotate() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let result = AxisAlignedRectangle::new(point, rect).rotate_clockwise();
+        let result = AxisAlignedRectangle::new(&point, &rect).rotate_clockwise();
         assert_eq!(result.origin(), Point::new(3, 2));
         assert_eq!(result.rect(), Rectangle::new(5, 4));
     }
@@ -195,7 +243,7 @@ mod tests {
     fn test_area() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let result = AxisAlignedRectangle::new(point, rect).area();
+        let result = AxisAlignedRectangle::new(&point, &rect).area();
         assert_eq!(result, 20);
     }
 
@@ -203,7 +251,7 @@ mod tests {
     fn test_edges() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let result = AxisAlignedRectangle::new(point, rect).edges();
+        let result = AxisAlignedRectangle::new(&point, &rect).edges();
         assert_eq!(result.len(), 4);
         assert_eq!(result[0], point);
         assert_eq!(result[1], Point::new(6, 3));
@@ -215,7 +263,7 @@ mod tests {
     fn test_include() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let a_rect = AxisAlignedRectangle::new(point, rect);
+        let a_rect = AxisAlignedRectangle::new(&point, &rect);
         assert!(!a_rect.includes(&Point::new(1, 3)));
         assert!(!a_rect.includes(&Point::new(7, 3)));
         assert!(!a_rect.includes(&Point::new(6, 2)));
@@ -226,22 +274,22 @@ mod tests {
     fn test_overlaps() {
         let point = Point::new(2, 3);
         let rect = Rectangle::new(4, 5);
-        let a_rect = AxisAlignedRectangle::new(point, rect);
+        let a_rect = AxisAlignedRectangle::new(&point, &rect);
         assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
-            Point::new(1, 2),
-            Rectangle::new(4, 5)
+            &Point::new(1, 2),
+            &Rectangle::new(4, 5)
         )));
         assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
-            Point::new(1, 4),
-            Rectangle::new(4, 5)
+            &Point::new(1, 4),
+            &Rectangle::new(4, 5)
         )));
         assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
-            Point::new(1, 5),
-            Rectangle::new(4, 5)
+            &Point::new(1, 5),
+            &Rectangle::new(4, 5)
         )));
         assert!(a_rect.overlaps(&AxisAlignedRectangle::new(
-            Point::new(1, 6),
-            Rectangle::new(4, 5)
+            &Point::new(1, 6),
+            &Rectangle::new(4, 5)
         )));
     }
 }
