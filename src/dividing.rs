@@ -77,7 +77,7 @@ pub trait Dividing<T> {
         T: Copy + for<'a> std::iter::Sum<&'a T> + Num + NumAssignOps + std::cmp::PartialOrd,
     {
         let norm_weights = normalize_weights(weights);
-        let total_area: T = self.area();
+        let total_area = self.area();
         let height = self.height();
 
         let mut dividing_weights: Vec<Vec<T>> = Vec::new();
@@ -86,18 +86,17 @@ pub trait Dividing<T> {
         let mut picked_weights: Vec<T> = Vec::new();
         let mut divided: Vec<Self> = Vec::new();
 
-        // pick weights until the aspect ratio is satisfied
+        remaining_weights.reverse(); // pop() removes item from the end of the vector, so reverse it
+                                     // pick weights until the aspect ratio is satisfied
         while let Some(picked_weight) = remaining_weights.pop() {
             picked_weights.push(picked_weight);
-            let total_picked_weight: T = picked_weights.iter().sum();
-            let picked_area: T = total_picked_weight * total_area;
-            let picked_width = picked_area / height;
-            let first_rect_weight = picked_weights[0];
-            let first_rect_height = height * first_rect_weight / total_picked_weight;
-            let first_rect_aspect_ratio = picked_width / first_rect_height;
-            if first_rect_aspect_ratio >= aspect_ratio {
-                // aspect ratio is satisfied (or over)
-                dividing_weights.push(picked_weights);
+            let weights_in_group = picked_weights.iter().sum::<T>();
+            let picked_area: T = total_area * weights_in_group;
+            let width = picked_area / height;
+            let first_item_height = picked_weights[0] / weights_in_group * height;
+            let first_item_aspect_ratio = width / first_item_height;
+            if first_item_aspect_ratio >= aspect_ratio {
+                dividing_weights.push(picked_weights.clone());
                 picked_weights = Vec::new();
             }
         }
@@ -110,9 +109,8 @@ pub trait Dividing<T> {
         for (divided_part, weights) in vertical_divided.iter().zip(dividing_weights.iter()) {
             let horizontal_divided =
                 divided_part.divide_by_weights_and_axis(weights, Axis::Horizontal);
-            divided.extend(horizontal_divided)
+            divided.extend(horizontal_divided);
         }
-
         divided
     }
 
@@ -301,6 +299,7 @@ mod tests {
         let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0);
         assert_weights_dividing(&rect, &divided, &weights);
         assert_no_overlaps(&rect, &divided);
+        assert_respect_aspect_ratio(&divided, &weights, 1.0);
         assert_eq!(
             divided[0],
             AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(50.0, 50.0))
@@ -326,6 +325,37 @@ mod tests {
         assert_no_overlaps(&rect, &divided);
         assert_eq!(divided[0], rect);
 
+        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(9.0, 8.0));
+        let weights = vec![4.0, 4.0, 1.0, 1.0, 1.0, 1.0];
+        let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.5);
+        assert_weights_dividing(&rect, &divided, &weights);
+        assert_no_overlaps(&rect, &divided);
+        assert_respect_aspect_ratio(&divided, &weights, 1.5);
+        assert_eq!(
+            divided[0].round(),
+            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(6.0, 4.0))
+        );
+        assert_eq!(
+            divided[1].round(),
+            AxisAlignedRectangle::new(&Point::new(0.0, 4.0), &Rectangle::new(6.0, 4.0))
+        );
+        assert_eq!(
+            divided[2].round(),
+            AxisAlignedRectangle::new(&Point::new(6.0, 0.0), &Rectangle::new(3.0, 2.0))
+        );
+        assert_eq!(
+            divided[3].round(),
+            AxisAlignedRectangle::new(&Point::new(6.0, 2.0), &Rectangle::new(3.0, 2.0))
+        );
+        assert_eq!(
+            divided[4].round(),
+            AxisAlignedRectangle::new(&Point::new(6.0, 4.0), &Rectangle::new(3.0, 2.0))
+        );
+        assert_eq!(
+            divided[5].round(),
+            AxisAlignedRectangle::new(&Point::new(6.0, 6.0), &Rectangle::new(3.0, 2.0))
+        );
+
         let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(300.0, 200.0));
         let weights = vec![4.0, 3.0, 2.0, 1.0];
         let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0);
@@ -333,19 +363,19 @@ mod tests {
         assert_no_overlaps(&rect, &divided);
         assert_eq!(
             divided[0].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(90.0, 66.0))
+            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(210.0, 114.0))
         );
         assert_eq!(
             divided[1].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 67.0), &Rectangle::new(90.0, 133.0))
+            AxisAlignedRectangle::new(&Point::new(0.0, 115.0), &Rectangle::new(210.0, 85.0))
         );
         assert_eq!(
             divided[2].round(),
-            AxisAlignedRectangle::new(&Point::new(91.0, 0.0), &Rectangle::new(209.0, 85.0))
+            AxisAlignedRectangle::new(&Point::new(210.0, 0.0), &Rectangle::new(90.0, 133.0))
         );
         assert_eq!(
             divided[3].round(),
-            AxisAlignedRectangle::new(&Point::new(91.0, 86.0), &Rectangle::new(209.0, 114.0))
+            AxisAlignedRectangle::new(&Point::new(210.0, 134.0), &Rectangle::new(90.0, 66.0))
         );
     }
 
@@ -372,6 +402,7 @@ mod tests {
         let divided = rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0);
         assert_weights_dividing(&rect, &divided, &weights);
         assert_no_overlaps(&rect, &divided);
+        assert_respect_aspect_ratio(&divided, &weights, 1.0);
         assert_eq!(
             divided[0],
             AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(50.0, 50.0))
@@ -389,6 +420,37 @@ mod tests {
             AxisAlignedRectangle::new(&Point::new(50.0, 50.0), &Rectangle::new(50.0, 50.0))
         );
 
+        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(8.0, 9.0));
+        let weights = vec![4.0, 4.0, 1.0, 1.0, 1.0, 1.0];
+        let divided = rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0 / 1.5);
+        assert_weights_dividing(&rect, &divided, &weights);
+        assert_no_overlaps(&rect, &divided);
+        assert_respect_aspect_ratio(&divided, &weights, 1.0 / 1.5);
+        assert_eq!(
+            divided[0].round(),
+            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(4.0, 6.0))
+        );
+        assert_eq!(
+            divided[1].round(),
+            AxisAlignedRectangle::new(&Point::new(4.0, 0.0), &Rectangle::new(4.0, 6.0))
+        );
+        assert_eq!(
+            divided[2].round(),
+            AxisAlignedRectangle::new(&Point::new(0.0, 6.0), &Rectangle::new(2.0, 3.0))
+        );
+        assert_eq!(
+            divided[3].round(),
+            AxisAlignedRectangle::new(&Point::new(2.0, 6.0), &Rectangle::new(2.0, 3.0))
+        );
+        assert_eq!(
+            divided[4].round(),
+            AxisAlignedRectangle::new(&Point::new(4.0, 6.0), &Rectangle::new(2.0, 3.0))
+        );
+        assert_eq!(
+            divided[5].round(),
+            AxisAlignedRectangle::new(&Point::new(6.0, 6.0), &Rectangle::new(2.0, 3.0))
+        );
+
         let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(300.0, 200.0));
         let weights = vec![4.0, 3.0, 2.0, 1.0];
         let divided = rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0);
@@ -396,19 +458,19 @@ mod tests {
         assert_no_overlaps(&rect, &divided);
         assert_eq!(
             divided[0].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(50.0, 120.0))
+            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(133.0, 180.0))
         );
         assert_eq!(
             divided[1].round(),
-            AxisAlignedRectangle::new(&Point::new(50.0, 0.0), &Rectangle::new(100.0, 120.0))
+            AxisAlignedRectangle::new(&Point::new(134.0, 0.0), &Rectangle::new(99.0, 180.0))
         );
         assert_eq!(
             divided[2].round(),
-            AxisAlignedRectangle::new(&Point::new(150.0, 0.0), &Rectangle::new(150.0, 120.0))
+            AxisAlignedRectangle::new(&Point::new(234.0, 0.0), &Rectangle::new(66.0, 180.0))
         );
         assert_eq!(
             divided[3].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 121.0), &Rectangle::new(300.0, 79.0))
+            AxisAlignedRectangle::new(&Point::new(0.0, 180.0), &Rectangle::new(300.0, 20.0))
         );
     }
 
@@ -535,11 +597,11 @@ mod tests {
         let normalized_weights = normalize_weights(weights);
         for (d, w) in divided.iter().zip(normalized_weights.iter()) {
             let asis_aspect_ratio = d.aspect_ratio();
-            let diff = asis_aspect_ratio / aspect_ratio;
-            assert!(diff >= 0.01);
-            assert!(diff <= 100.0);
-            assert!(diff / *w >= 0.999);
-            assert!(diff * *w <= 1.001);
+            let diff = (asis_aspect_ratio - aspect_ratio).abs();
+            // ideal diff must be 1.0 (same aspect ratio) but the real diff is not 1.0
+            // assert that the diff is not too big, not too small
+            // larger weights are expected to the diff must be smaller, smaller weights are expected to the diff must be smaller
+            assert!(diff * *w < 0.5);
         }
     }
 }
