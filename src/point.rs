@@ -1,3 +1,5 @@
+use num_traits::{Float, Num, NumAssignOps, NumOps};
+
 use crate::axis::{Axis, ValueForAxis};
 use crate::component::Component;
 use crate::rotate::QuarterRotation;
@@ -6,15 +8,49 @@ use crate::vector::Vector;
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Point<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     x: T,
     y: T,
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Edge {
+    LeftTop,
+    RightTop,
+    LeftBottom,
+    RightBottom,
+}
+
+impl<T> Point<T>
+where
+    T: Copy + Num + NumAssignOps + NumOps + Float,
+{
+    pub fn round(&self, edge: Edge) -> Self {
+        match edge {
+            Edge::LeftTop => Self {
+                x: self.x.floor(),
+                y: self.y.floor(),
+            },
+            Edge::RightTop => Self {
+                x: self.x.ceil(),
+                y: self.y.floor(),
+            },
+            Edge::LeftBottom => Self {
+                x: self.x.floor(),
+                y: self.y.ceil(),
+            },
+            Edge::RightBottom => Self {
+                x: self.x.ceil(),
+                y: self.y.ceil(),
+            },
+        }
+    }
+}
+
 impl<T> ValueForAxis<T> for Point<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     fn value_for_axis(&self, axis: Axis) -> T {
         match axis {
@@ -26,7 +62,7 @@ where
 
 impl<T> Component<T> for Point<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     fn x(&self) -> T {
         self.x
@@ -40,7 +76,7 @@ where
 /// A point in 2D space constructor
 impl<T> Point<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     pub fn new(x: T, y: T) -> Self {
         Point { x, y }
@@ -50,7 +86,7 @@ where
 /// A point in 2D space with default values. in many cases, this is (0, 0)
 impl<T> std::default::Default for Point<T>
 where
-    T: Default + Copy,
+    T: Default + Copy + Num + NumAssignOps + NumOps,
 {
     fn default() -> Self {
         Self::new(T::default(), T::default())
@@ -60,7 +96,7 @@ where
 /// Vector from point A to point B
 impl<T> std::ops::Sub<Point<T>> for Point<T>
 where
-    T: Copy + std::ops::Sub<Output = T>,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     type Output = Vector<T>;
 
@@ -72,7 +108,7 @@ where
 /// Rotate a point by 90 degrees
 impl<T> QuarterRotation for Point<T>
 where
-    T: Copy,
+    T: Copy + Num + NumAssignOps + NumOps,
 {
     fn rotate_clockwise(&self) -> Self {
         Point {
@@ -124,7 +160,7 @@ mod tests {
     /// Helper function to assert that two points are equal
     fn assert_point_eq<T>(p1: &Point<T>, p2: &Point<T>)
     where
-        T: Copy + PartialEq + std::fmt::Debug,
+        T: Copy + PartialEq + std::fmt::Debug + Num + NumAssignOps + NumOps,
     {
         assert_point_has_same_component_is_equal(p1, p2);
     }
@@ -132,7 +168,7 @@ mod tests {
     /// Assert that two points have the same component values
     fn assert_point_has_same_component_is_equal<T>(p1: &Point<T>, p2: &Point<T>)
     where
-        T: Copy + PartialEq + std::fmt::Debug,
+        T: Copy + PartialEq + std::fmt::Debug + Num + NumAssignOps + NumOps,
     {
         assert_eq!(p1.x, p2.x);
         assert_eq!(p1.y, p2.y);
