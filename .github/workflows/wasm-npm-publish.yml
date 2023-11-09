@@ -1,0 +1,51 @@
+name: wasm
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  release:
+    # "released" events are emitted either when directly be released or be edited from pre-released.
+    types: [prereleased, released]
+
+env:
+  # Use git tag when release, otherwise use commit hash.
+  VERSION: ${{ (github.event_name == 'release' && !github.event.release.prerelease) && github.ref_name || github.sha }}
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - run: |
+          # wasm-pack test --node --firefox --chrome --safari --headless
+          wasm-pack build --release --target bundler --scope kitsuyui
+          jq '.name|="@kitsuyui/rectangle-dividing"' pkg/package.json > pkg/package.json.bak
+          mv pkg/package.json.bak pkg/package.json
+          wasm-pack pack
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Create tarball
+        run: tar -czf pkg.tar.gz pkg
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wasm-${{ env.VERSION }}
+          path: ./wasm/pkg.tar.gz
+          retention-days: 1
+
+      - name: publish
+        if: github.event_name == 'release' && !github.event.release.prerelease
+        run: wasm-pack publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
