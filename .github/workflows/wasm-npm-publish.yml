@@ -25,7 +25,7 @@ jobs:
 
       - run: |
           # wasm-pack test --node --firefox --chrome --safari --headless
-          wasm-pack build --release --target bundler --scope kitsuyui
+          wasm-pack build --release --target web --scope kitsuyui
           jq '.name|="@kitsuyui/rectangle-dividing"' pkg/package.json > pkg/package.json.bak
           mv pkg/package.json.bak pkg/package.json
           wasm-pack pack

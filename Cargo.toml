@@ -1,6 +1,6 @@
 [package]
 name = "rust-rectangle-dividing"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A rectangle dividing algorithm written in Rust"
 repository = "https://github.com/kitsuyui/rust-rectangle-dividing/"
