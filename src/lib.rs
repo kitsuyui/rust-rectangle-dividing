@@ -8,4 +8,5 @@ pub mod point;
 pub mod rectangle;
 pub(crate) mod rotate;
 pub(crate) mod vector;
+pub mod wasm_binding;
 pub(crate) mod weight;
