@@ -41,7 +41,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: wasm-${{ env.VERSION }}
-          path: ./wasm/pkg.tar.gz
+          path: ./pkg.tar.gz
           retention-days: 1
 
       - name: publish
