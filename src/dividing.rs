@@ -48,7 +48,7 @@ pub trait Dividing<T> {
     }
 
     /// dividing a rectangle into specified weights of rectangles specified by axis
-    fn divide_by_weights_and_axis(&self, weights: &Vec<T>, axis: Axis) -> Vec<Self>
+    fn divide_by_weights_and_axis(&self, weights: &[T], axis: Axis) -> Vec<Self>
     where
         Self: Sized + RectangleSize<T> + Clone + SizeForAxis<T>,
         T: Copy + for<'a> std::iter::Sum<&'a T> + Num + NumAssignOps + NumOps,

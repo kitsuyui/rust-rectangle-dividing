@@ -11,14 +11,31 @@ Mainly, I want to use this for generating a map for my react-playground
 - https://github.com/kitsuyui/react-playground
 - https://react-playground.docs.kitsuyui.com/storybook/?path=/docs/base-treemap-introduction--docs
 
-## Usage
+## Usage in JavaScript
+
+### Install
+
+This package is published on NPM [@kitsuyui/rectangle-dividing](https://www.npmjs.com/package/@kitsuyui/rectangle-dividing)
+
+```sh
+$ npm install @kitsuyui/rectangle-dividing
+# or
+$ yarn add @kitsuyui/rectangle-dividing
+# or
+$ pnpm add @kitsuyui/rectangle-dividing
+```
+
+### Example
 
 ```js
-import dividing from "rust-rectangle-dividing";
+import { dividing } from "@kitsuyui/rectangle-dividing";
 
 const rect = { x: 0, y: 0, w: 900, h: 800 };
-const weights = [4, 4, 1, 1, 1, 1];
-const divided = dividing.dividing(rect, weights, true, 1.5, true);
+const weights: Float32Array = Float32Array.from([4, 4, 1, 1, 1, 1]);
+const aspectRatio = 1.5;
+const verticalFirst = true;
+const boustrophedron = true;
+const divided = dividing(rect, weights, aspectRatio, verticalFirst, boustrophedron);
 for (const d of divided) {
   console.log(d);
 }
