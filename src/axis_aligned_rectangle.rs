@@ -142,6 +142,7 @@ where
         ]
     }
 
+    #[allow(dead_code)]
     pub(crate) fn includes(&self, p: &Point<T>) -> bool {
         p.x() > self.point.x()
             && p.x() < self.point.x() + self.rectangle.width()
@@ -149,6 +150,7 @@ where
             && p.y() < self.point.y() + self.rectangle.height()
     }
 
+    #[allow(dead_code)]
     pub(crate) fn includes_or_on_the_boundary(&self, p: &Point<T>) -> bool {
         p.x() >= self.point.x()
             && p.x() <= self.point.x() + self.rectangle.width()
@@ -156,11 +158,13 @@ where
             && p.y() <= self.point.y() + self.rectangle.height()
     }
 
+    #[allow(dead_code)]
     pub(crate) fn overlaps(&self, other: &Self) -> bool {
         // if any of the edges of the other rectangle are inside this rectangle, then they overlap
         other.edges().iter().any(|p| self.includes(p))
     }
 
+    #[allow(dead_code)]
     pub(crate) fn enclodes(&self, other: &Self) -> bool {
         // if all of the edges of the other rectangle are inside this rectangle, then they are enclosed
         other

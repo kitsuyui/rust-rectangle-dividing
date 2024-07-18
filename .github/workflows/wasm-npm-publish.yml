@@ -26,13 +26,12 @@ jobs:
       - run: |
           # wasm-pack test --node --firefox --chrome --safari --headless
           wasm-pack build --release --target bundler --scope kitsuyui
-          jq '.name|="@kitsuyui/rectangle-dividing"' pkg/package.json > pkg/package.json.bak
-          mv pkg/package.json.bak pkg/package.json
+          ./update-package-json.sh
           wasm-pack pack
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Create tarball
