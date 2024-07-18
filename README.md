@@ -27,6 +27,8 @@ $ pnpm add @kitsuyui/rectangle-dividing
 
 ### Example
 
+`node --experimental-wasm-modules` flag is required to use WebAssembly in Node.js
+
 ```js
 import { dividing } from "@kitsuyui/rectangle-dividing";
 
