@@ -88,7 +88,7 @@ pub trait Dividing<T> {
         let mut divided: Vec<Self> = Vec::new();
 
         remaining_weights.reverse(); // pop() removes item from the end of the vector, so reverse it
-                                     // pick weights until the aspect ratio is satisfied
+        // pick weights until the aspect ratio is satisfied
         while let Some(picked_weight) = remaining_weights.pop() {
             picked_weights.push(picked_weight);
             let weights_in_group = picked_weights.iter().sum::<T>();
