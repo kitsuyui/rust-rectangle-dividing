@@ -202,7 +202,7 @@ mod tests {
         let divided1 = rect.divide_by_values_and_axis(&vec![1.0, 2.0], Axis::Vertical);
 
         let rect = Rectangle::new(6.0, 2.0);
-        let divided2 = rect.divide_by_weights_and_axis(&vec![2.0, 4.0, 6.0], Axis::Vertical);
+        let divided2 = rect.divide_by_weights_and_axis(&[2.0, 4.0, 6.0], Axis::Vertical);
         assert_eq!(divided1, divided2);
     }
 
