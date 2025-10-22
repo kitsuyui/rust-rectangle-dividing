@@ -1,4 +1,4 @@
-/// Area of an axis aligned rectangle
 pub trait Area<T> {
+    /// Calculate the area of the shape
     fn area(&self) -> T;
 }
