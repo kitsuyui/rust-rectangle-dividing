@@ -317,30 +317,31 @@ mod tests {
         assert_respect_aspect_ratio(&divided, &weights, 1.0);
         assert_eq!(
             divided[0],
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(50.0, 50.0))
+            // AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(0.0, 0.0, 50.0, 50.0)
         );
         assert_eq!(
             divided[1],
-            AxisAlignedRectangle::new(&Point::new(0.0, 50.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(0.0, 50.0, 50.0, 50.0)
         );
         assert_eq!(
             divided[2],
-            AxisAlignedRectangle::new(&Point::new(50.0, 0.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(50.0, 0.0, 50.0, 50.0)
         );
         assert_eq!(
             divided[3],
-            AxisAlignedRectangle::new(&Point::new(50.0, 50.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(50.0, 50.0, 50.0, 50.0)
         );
 
         // not divided case
-        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(100.0, 100.0));
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 100.0, 100.0);
         let weights = vec![1.0];
         let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0, false);
         assert_weights_dividing(&rect, &divided, &weights);
         assert_no_overlaps(&rect, &divided);
         assert_eq!(divided[0], rect);
 
-        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(9.0, 8.0));
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 9.0, 8.0);
         let weights = vec![4.0, 4.0, 1.0, 1.0, 1.0, 1.0];
         let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.5, false);
         assert_weights_dividing(&rect, &divided, &weights);
@@ -348,49 +349,49 @@ mod tests {
         assert_respect_aspect_ratio(&divided, &weights, 1.5);
         assert_eq!(
             divided[0].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(6.0, 4.0))
+            AxisAlignedRectangle::from4values(0.0, 0.0, 6.0, 4.0)
         );
         assert_eq!(
             divided[1].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 4.0), &Rectangle::new(6.0, 4.0))
+            AxisAlignedRectangle::from4values(0.0, 4.0, 6.0, 4.0)
         );
         assert_eq!(
             divided[2].round(),
-            AxisAlignedRectangle::new(&Point::new(6.0, 0.0), &Rectangle::new(3.0, 2.0))
+            AxisAlignedRectangle::from4values(6.0, 0.0, 3.0, 2.0)
         );
         assert_eq!(
             divided[3].round(),
-            AxisAlignedRectangle::new(&Point::new(6.0, 2.0), &Rectangle::new(3.0, 2.0))
+            AxisAlignedRectangle::from4values(6.0, 2.0, 3.0, 2.0)
         );
         assert_eq!(
             divided[4].round(),
-            AxisAlignedRectangle::new(&Point::new(6.0, 4.0), &Rectangle::new(3.0, 2.0))
+            AxisAlignedRectangle::from4values(6.0, 4.0, 3.0, 2.0)
         );
         assert_eq!(
             divided[5].round(),
-            AxisAlignedRectangle::new(&Point::new(6.0, 6.0), &Rectangle::new(3.0, 2.0))
+            AxisAlignedRectangle::from4values(6.0, 6.0, 3.0, 2.0)
         );
 
-        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(300.0, 200.0));
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 300.0, 200.0);
         let weights = vec![4.0, 3.0, 2.0, 1.0];
         let divided = rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0, false);
         assert_weights_dividing(&rect, &divided, &weights);
         assert_no_overlaps(&rect, &divided);
         assert_eq!(
             divided[0].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(210.0, 114.0))
+            AxisAlignedRectangle::from4values(0.0, 0.0, 210.0, 114.0)
         );
         assert_eq!(
             divided[1].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 115.0), &Rectangle::new(210.0, 85.0))
+            AxisAlignedRectangle::from4values(0.0, 115.0, 210.0, 85.0)
         );
         assert_eq!(
             divided[2].round(),
-            AxisAlignedRectangle::new(&Point::new(210.0, 0.0), &Rectangle::new(90.0, 133.0))
+            AxisAlignedRectangle::from4values(210.0, 0.0, 90.0, 133.0)
         );
         assert_eq!(
             divided[3].round(),
-            AxisAlignedRectangle::new(&Point::new(210.0, 134.0), &Rectangle::new(90.0, 66.0))
+            AxisAlignedRectangle::from4values(210.0, 134.0, 90.0, 66.0)
         );
     }
 
@@ -412,7 +413,7 @@ mod tests {
         assert_weights_dividing(&rect, &divided, &weights);
         assert_eq!(divided[0], rect);
 
-        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(100.0, 100.0));
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 100.0, 100.0);
         let weights = vec![1.0, 1.0, 1.0, 1.0];
         let divided = rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0, false);
         assert_weights_dividing(&rect, &divided, &weights);
@@ -420,22 +421,22 @@ mod tests {
         assert_respect_aspect_ratio(&divided, &weights, 1.0);
         assert_eq!(
             divided[0],
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(0.0, 0.0, 50.0, 50.0)
         );
         assert_eq!(
             divided[1],
-            AxisAlignedRectangle::new(&Point::new(50.0, 0.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(50.0, 0.0, 50.0, 50.0)
         );
         assert_eq!(
             divided[2],
-            AxisAlignedRectangle::new(&Point::new(0.0, 50.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(0.0, 50.0, 50.0, 50.0)
         );
         assert_eq!(
             divided[3],
-            AxisAlignedRectangle::new(&Point::new(50.0, 50.0), &Rectangle::new(50.0, 50.0))
+            AxisAlignedRectangle::from4values(50.0, 50.0, 50.0, 50.0)
         );
 
-        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(8.0, 9.0));
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 8.0, 9.0);
         let weights = vec![4.0, 4.0, 1.0, 1.0, 1.0, 1.0];
         let divided = rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0 / 1.5, false);
         assert_weights_dividing(&rect, &divided, &weights);
@@ -443,49 +444,49 @@ mod tests {
         assert_respect_aspect_ratio(&divided, &weights, 1.0 / 1.5);
         assert_eq!(
             divided[0].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(4.0, 6.0))
+            AxisAlignedRectangle::from4values(0.0, 0.0, 4.0, 6.0)
         );
         assert_eq!(
             divided[1].round(),
-            AxisAlignedRectangle::new(&Point::new(4.0, 0.0), &Rectangle::new(4.0, 6.0))
+            AxisAlignedRectangle::from4values(4.0, 0.0, 4.0, 6.0)
         );
         assert_eq!(
             divided[2].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(0.0, 6.0, 2.0, 3.0)
         );
         assert_eq!(
             divided[3].round(),
-            AxisAlignedRectangle::new(&Point::new(2.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(2.0, 6.0, 2.0, 3.0)
         );
         assert_eq!(
             divided[4].round(),
-            AxisAlignedRectangle::new(&Point::new(4.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(4.0, 6.0, 2.0, 3.0)
         );
         assert_eq!(
             divided[5].round(),
-            AxisAlignedRectangle::new(&Point::new(6.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(6.0, 6.0, 2.0, 3.0)
         );
 
-        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(300.0, 200.0));
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 300.0, 200.0);
         let weights = vec![4.0, 3.0, 2.0, 1.0];
         let divided = rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0, false);
         assert_weights_dividing(&rect, &divided, &weights);
         assert_no_overlaps(&rect, &divided);
         assert_eq!(
             divided[0].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(133.0, 180.0))
+            AxisAlignedRectangle::from4values(0.0, 0.0, 133.0, 180.0)
         );
         assert_eq!(
             divided[1].round(),
-            AxisAlignedRectangle::new(&Point::new(134.0, 0.0), &Rectangle::new(99.0, 180.0))
+            AxisAlignedRectangle::from4values(134.0, 0.0, 99.0, 180.0)
         );
         assert_eq!(
             divided[2].round(),
-            AxisAlignedRectangle::new(&Point::new(234.0, 0.0), &Rectangle::new(66.0, 180.0))
+            AxisAlignedRectangle::from4values(234.0, 0.0, 66.0, 180.0)
         );
         assert_eq!(
             divided[3].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 180.0), &Rectangle::new(300.0, 20.0))
+            AxisAlignedRectangle::from4values(0.0, 180.0, 300.0, 20.0)
         );
     }
 
@@ -493,10 +494,10 @@ mod tests {
     fn test_divide_many() {
         // various pattern
         let rects = vec![
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(100.0, 100.0)),
-            AxisAlignedRectangle::new(&Point::new(100.0, 0.0), &Rectangle::new(100.0, 300.0)),
-            AxisAlignedRectangle::new(&Point::new(0.0, 100.0), &Rectangle::new(300.0, 100.0)),
-            AxisAlignedRectangle::new(&Point::new(0.0, 100.0), &Rectangle::new(300.0, 300.0)),
+            AxisAlignedRectangle::from4values(0.0, 0.0, 100.0, 100.0),
+            AxisAlignedRectangle::from4values(100.0, 0.0, 100.0, 300.0),
+            AxisAlignedRectangle::from4values(0.0, 100.0, 300.0, 100.0),
+            AxisAlignedRectangle::from4values(0.0, 100.0, 300.0, 300.0),
         ];
         let various_weights = vec![vec![
             24.0, 23.0, 22.0, 21.0, 20.0, 19.0, 18.0, 17.0, 16.0, 15.0, 14.0, 13.0, 12.0, 11.0,
@@ -541,7 +542,7 @@ mod tests {
 
     #[test]
     fn test_boustrophedon() {
-        let rect = AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(8.0, 9.0));
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 8.0, 9.0);
         let weights = vec![4.0, 4.0, 1.0, 1.0, 1.0, 1.0];
         let divided = rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0 / 1.5, true);
         assert_weights_dividing(&rect, &divided, &weights);
@@ -549,27 +550,27 @@ mod tests {
         assert_respect_aspect_ratio(&divided, &weights, 1.0 / 1.5);
         assert_eq!(
             divided[0].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 0.0), &Rectangle::new(4.0, 6.0))
+            AxisAlignedRectangle::from4values(0.0, 0.0, 4.0, 6.0)
         );
         assert_eq!(
             divided[1].round(),
-            AxisAlignedRectangle::new(&Point::new(4.0, 0.0), &Rectangle::new(4.0, 6.0))
+            AxisAlignedRectangle::from4values(4.0, 0.0, 4.0, 6.0)
         );
         assert_eq!(
             divided[2].round(),
-            AxisAlignedRectangle::new(&Point::new(6.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(6.0, 6.0, 2.0, 3.0)
         );
         assert_eq!(
             divided[3].round(),
-            AxisAlignedRectangle::new(&Point::new(4.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(4.0, 6.0, 2.0, 3.0)
         );
         assert_eq!(
             divided[4].round(),
-            AxisAlignedRectangle::new(&Point::new(2.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(2.0, 6.0, 2.0, 3.0)
         );
         assert_eq!(
             divided[5].round(),
-            AxisAlignedRectangle::new(&Point::new(0.0, 6.0), &Rectangle::new(2.0, 3.0))
+            AxisAlignedRectangle::from4values(0.0, 6.0, 2.0, 3.0)
         );
     }
 
@@ -628,7 +629,7 @@ mod tests {
     {
         // check all divided rectangles are inside the original rectangle
         for d in divided {
-            assert!(original.enclodes(&d.round()));
+            assert!(original.encloses(&d.round()));
         }
         // check no overlap between divided rectangles
         for (d1, d2) in divided.iter().zip(divided.iter().skip(1)) {

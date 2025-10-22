@@ -1,3 +1,4 @@
+/// An axis in 2D space, either vertical or horizontal. (X or Y)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Axis {
     Vertical,
@@ -5,6 +6,7 @@ pub enum Axis {
 }
 
 impl Axis {
+    /// Get the opposite axis of the current axis (Vertical <-> Horizontal)
     pub fn opposite(&self) -> Self {
         match self {
             Axis::Vertical => Axis::Horizontal,
