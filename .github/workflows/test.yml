@@ -25,9 +25,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo test
-        env:
-          # Needed for API tests
-          CODECOV_OWNER_TOKEN: ${{ secrets.CODECOV_OWNER_TOKEN }}
 
   format:
     name: Format
@@ -72,16 +69,3 @@ jobs:
       - run: |
           cargo install cargo-llvm-cov || true
           cargo llvm-cov --lcov --output-path coverage.lcov
-        env:
-          # Needed for API tests
-          CODECOV_OWNER_TOKEN: ${{ secrets.CODECOV_OWNER_TOKEN }}
-
-      - name: Upload coverage report to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.lcov
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          verbose: true
