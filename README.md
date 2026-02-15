@@ -1,5 +1,7 @@
 # rust-rectangle-dividing
 
+![Coverage](https://raw.githubusercontent.com/kitsuyui/octocov-central/main/badges/kitsuyui/rust-rectangle-dividing/coverage.svg)
+
 A library of rectangle dividing written in Rust.
 It can be compiled to WebAssembly. So you can use it in JavaScript.
 
