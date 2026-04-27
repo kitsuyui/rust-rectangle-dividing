@@ -60,8 +60,8 @@ dividing's arguments are
 
 - `rect`: The rectangle to be divided
 - `weights`: The weights of each rectangle
-- `isVertical`: The direction of the first division
 - `aspectRatio`: The aspect ratio of each rectangle
+- `verticalFirst`: The direction of the first division
 - `boustrophedon`: The direction of the next division in the same level
 
 # License
