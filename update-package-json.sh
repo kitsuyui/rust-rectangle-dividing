@@ -6,7 +6,7 @@ inplace() {
   shift
   local tmp
   tmp=$(mktemp)
-  echo "Running: $@"
+  echo "Running: $*"
   "$@" < "$file" > "$tmp"
   mv "$tmp" "$file"
   rm -f "$tmp"
