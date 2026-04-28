@@ -12,6 +12,16 @@ env:
   VERSION: ${{ (github.event_name == 'release' && !github.event.release.prerelease) && github.ref_name || github.sha }}
 
 jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Check package metadata helper
+        run: shellcheck update-package-json.sh
+
   build:
     name: build
     runs-on: ubuntu-latest
