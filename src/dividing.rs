@@ -48,6 +48,8 @@ pub trait Dividing<T> {
     }
 
     /// dividing a rectangle into specified weights of rectangles specified by axis
+    ///
+    /// If the weights sum to zero, they are treated as equal weights.
     fn divide_by_weights_and_axis(&self, weights: &[T], axis: Axis) -> Vec<Self>
     where
         Self: Sized + RectangleSize<T> + Clone + SizeForAxis<T>,
@@ -67,6 +69,9 @@ pub trait Dividing<T> {
         self.divide_by_values_and_axis(&values, axis)
     }
 
+    /// Divide by weights using vertical groups first, then horizontal groups.
+    ///
+    /// If the weights sum to zero, they are treated as equal weights.
     fn divide_vertical_then_horizontal_with_weights(
         &self,
         weights: &[T],
@@ -125,6 +130,9 @@ pub trait Dividing<T> {
         divided
     }
 
+    /// Divide by weights using horizontal groups first, then vertical groups.
+    ///
+    /// If the weights sum to zero, they are treated as equal weights.
     fn divide_horizontal_then_vertical_with_weights(
         &self,
         weights: &[T],
@@ -396,6 +404,58 @@ mod tests {
     }
 
     #[test]
+    fn test_divide_by_zero_sum_weights() {
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 90.0, 30.0);
+        let divided = rect.divide_by_weights_and_axis(&[0.0, 0.0, 0.0], Axis::Vertical);
+
+        assert_eq!(
+            divided,
+            vec![
+                AxisAlignedRectangle::from4values(0.0, 0.0, 30.0, 30.0),
+                AxisAlignedRectangle::from4values(30.0, 0.0, 30.0, 30.0),
+                AxisAlignedRectangle::from4values(60.0, 0.0, 30.0, 30.0),
+            ]
+        );
+        assert_rects_are_finite(&divided);
+        assert_weights_dividing(&rect, &divided, &[0.0, 0.0, 0.0]);
+        assert_no_overlaps(&rect, &divided);
+
+        let divided = rect.divide_by_weights_and_axis(&[-1.0, 1.0], Axis::Vertical);
+        assert_eq!(
+            divided,
+            vec![
+                AxisAlignedRectangle::from4values(0.0, 0.0, 45.0, 30.0),
+                AxisAlignedRectangle::from4values(45.0, 0.0, 45.0, 30.0),
+            ]
+        );
+        assert_rects_are_finite(&divided);
+        assert_weights_dividing(&rect, &divided, &[-1.0, 1.0]);
+        assert_no_overlaps(&rect, &divided);
+    }
+
+    #[test]
+    fn test_divide_layout_by_zero_sum_weights() {
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 100.0, 100.0);
+        let weights = [0.0, 0.0, 0.0, 0.0];
+
+        let vertical_first =
+            rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0, false);
+        assert_eq!(vertical_first.len(), weights.len());
+        assert_rects_are_finite(&vertical_first);
+        assert_weights_dividing(&rect, &vertical_first, &weights);
+        assert_no_overlaps(&rect, &vertical_first);
+        assert_respect_aspect_ratio(&vertical_first, &weights, 1.0);
+
+        let horizontal_first =
+            rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0, false);
+        assert_eq!(horizontal_first.len(), weights.len());
+        assert_rects_are_finite(&horizontal_first);
+        assert_weights_dividing(&rect, &horizontal_first, &weights);
+        assert_no_overlaps(&rect, &horizontal_first);
+        assert_respect_aspect_ratio(&horizontal_first, &weights, 1.0);
+    }
+
+    #[test]
     fn test_divide_horizontal_then_vertical_with_weights() {
         let rect = Rectangle::new(100.0, 100.0);
         let weights = vec![1.0, 1.0, 1.0, 1.0];
@@ -634,6 +694,15 @@ mod tests {
         // check no overlap between divided rectangles
         for (d1, d2) in divided.iter().zip(divided.iter().skip(1)) {
             assert!(!d1.round().overlaps(&d2.round()));
+        }
+    }
+
+    fn assert_rects_are_finite(rects: &[AxisAlignedRectangle<f64>]) {
+        for rect in rects {
+            assert!(rect.x().is_finite());
+            assert!(rect.y().is_finite());
+            assert!(rect.width().is_finite());
+            assert!(rect.height().is_finite());
         }
     }
 

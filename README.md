@@ -64,6 +64,8 @@ dividing's arguments are
 - `verticalFirst`: The direction of the first division
 - `boustrophedon`: The direction of the next division in the same level
 
+If the weights sum to zero, the weights are treated as equal weights.
+
 # License
 
 MIT
