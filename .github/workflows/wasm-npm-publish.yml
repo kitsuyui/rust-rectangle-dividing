@@ -11,12 +11,15 @@ env:
   # Use git tag when release, otherwise use commit hash.
   VERSION: ${{ (github.event_name == 'release' && !github.event.release.prerelease) && github.ref_name || github.sha }}
 
+permissions:
+  contents: read
+
 jobs:
   shellcheck:
     name: shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install ShellCheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Check package metadata helper
@@ -26,10 +29,10 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - uses: taiki-e/install-action@v2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: taiki-e/install-action@cca35edeb1d01366c2843b68fc3ca441446d73d3 # v2
         with:
           tool: wasm-pack
 
@@ -39,7 +42,7 @@ jobs:
           ./update-package-json.sh
           wasm-pack pack
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
@@ -47,7 +50,7 @@ jobs:
       - name: Create tarball
         run: tar -czf pkg.tar.gz pkg
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: wasm-${{ env.VERSION }}
           path: ./pkg.tar.gz
