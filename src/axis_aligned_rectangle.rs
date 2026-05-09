@@ -130,14 +130,20 @@ impl<T> AxisAlignedRectangle<T>
 where
     T: Copy + Num + NumAssignOps + NumOps + Float,
 {
-    /// Create an axis aligned rectangle from two points
+    /// Create an axis aligned rectangle from two points.
+    ///
+    /// The result covers the region `(min(p1, p2)) -> (max(p1, p2))`,
+    /// independent of which point is given as `p1` or `p2`.
     pub fn from_two_point(p1: &Point<T>, p2: &Point<T>) -> Self {
-        let vec = *p1 - *p2;
-        let width = vec.x().abs();
-        let height = vec.y().abs();
+        let min_x = p1.x().min(p2.x());
+        let min_y = p1.y().min(p2.y());
+        let max_x = p1.x().max(p2.x());
+        let max_y = p1.y().max(p2.y());
+        let width = max_x - min_x;
+        let height = max_y - min_y;
         let rect = Rectangle::new(width, height);
 
-        Self::new(p1, &rect)
+        Self::new(&Point::new(min_x, min_y), &rect)
     }
 }
 
@@ -356,5 +362,45 @@ mod tests {
 
         assert!(!a_rect.overlaps(&AxisAlignedRectangle::from4values(0, 0, 1, 1)));
         assert!(!a_rect.overlaps(&AxisAlignedRectangle::from4values(5, 8, 6, 9)));
+    }
+
+    #[test]
+    fn test_from_two_point_is_order_independent() {
+        // The four orderings of two points must all produce the same rectangle:
+        // origin (1.0, 2.0) with width 4.0 and height 3.0.
+        let a = Point::new(1.0_f64, 2.0_f64);
+        let b = Point::new(5.0_f64, 5.0_f64);
+        let c = Point::new(1.0_f64, 5.0_f64);
+        let d = Point::new(5.0_f64, 2.0_f64);
+
+        let expected_origin = Point::new(1.0_f64, 2.0_f64);
+        let expected_rect = Rectangle::new(4.0_f64, 3.0_f64);
+
+        for (p1, p2) in [(a, b), (b, a), (c, d), (d, c)] {
+            let r = AxisAlignedRectangle::from_two_point(&p1, &p2);
+            assert_eq!(r.origin(), expected_origin);
+            assert_eq!(r.rect(), expected_rect);
+        }
+    }
+
+    #[test]
+    fn test_from_two_point_with_p1_greater_than_p2() {
+        // Regression: previously the origin was unconditionally `p1`, so
+        // `from_two_point((5, 5), (0, 0))` produced a rectangle covering
+        // (5, 5)-(10, 10) instead of the expected (0, 0)-(5, 5).
+        let p1 = Point::new(5.0_f64, 5.0_f64);
+        let p2 = Point::new(0.0_f64, 0.0_f64);
+        let r = AxisAlignedRectangle::from_two_point(&p1, &p2);
+        assert_eq!(r.origin(), Point::new(0.0_f64, 0.0_f64));
+        assert_eq!(r.rect(), Rectangle::new(5.0_f64, 5.0_f64));
+    }
+
+    #[test]
+    fn test_from_two_point_with_degenerate_points() {
+        // Same point twice produces a zero-sized rectangle anchored there.
+        let p = Point::new(3.0_f64, 4.0_f64);
+        let r = AxisAlignedRectangle::from_two_point(&p, &p);
+        assert_eq!(r.origin(), p);
+        assert_eq!(r.rect(), Rectangle::new(0.0_f64, 0.0_f64));
     }
 }
