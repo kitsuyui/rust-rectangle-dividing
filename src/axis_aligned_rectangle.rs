@@ -177,8 +177,8 @@ where
         ]
     }
 
-    /// Check if the point is inside the rectangle or on the boundary
-    /// Returns true if the point is inside the rectangle, false otherwise
+    /// Check if the point is strictly inside the rectangle (excluding the boundary).
+    /// Use [`Self::includes_or_on_the_boundary`] when the boundary should count as inside.
     pub(crate) fn includes(&self, p: &Point<T>) -> bool {
         // x
         if p.x() <= self.min_x() || p.x() >= self.max_x() {
@@ -310,6 +310,38 @@ mod tests {
         assert!(!a_rect.includes(&Point::new(7, 3)));
         assert!(!a_rect.includes(&Point::new(6, 2)));
         assert!(!a_rect.includes(&Point::new(6, 9)));
+
+        // Boundary points are strictly excluded (corners and edge midpoints).
+        assert!(!a_rect.includes(&Point::new(2, 3)));
+        assert!(!a_rect.includes(&Point::new(6, 3)));
+        assert!(!a_rect.includes(&Point::new(2, 8)));
+        assert!(!a_rect.includes(&Point::new(6, 8)));
+        assert!(!a_rect.includes(&Point::new(4, 3)));
+        assert!(!a_rect.includes(&Point::new(6, 5)));
+        assert!(!a_rect.includes(&Point::new(4, 8)));
+        assert!(!a_rect.includes(&Point::new(2, 5)));
+    }
+
+    #[test]
+    fn test_includes_or_on_the_boundary() {
+        let a_rect = AxisAlignedRectangle::from4values(2, 3, 4, 5);
+        // Strict interior points are included.
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(3, 4)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(5, 7)));
+        // Boundary points (corners and edge midpoints) are also included.
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(2, 3)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(6, 3)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(2, 8)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(6, 8)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(4, 3)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(6, 5)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(4, 8)));
+        assert!(a_rect.includes_or_on_the_boundary(&Point::new(2, 5)));
+        // Outside points are excluded.
+        assert!(!a_rect.includes_or_on_the_boundary(&Point::new(1, 3)));
+        assert!(!a_rect.includes_or_on_the_boundary(&Point::new(7, 3)));
+        assert!(!a_rect.includes_or_on_the_boundary(&Point::new(6, 2)));
+        assert!(!a_rect.includes_or_on_the_boundary(&Point::new(6, 9)));
     }
 
     #[test]
