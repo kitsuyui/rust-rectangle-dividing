@@ -36,9 +36,16 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-      - uses: taiki-e/install-action@cca35edeb1d01366c2843b68fc3ca441446d73d3 # v2
-        with:
-          tool: wasm-pack
+      - name: Install wasm-pack
+        env:
+          WASM_PACK_VERSION: "0.14.0"
+        run: |
+          curl -fsSL \
+            "https://github.com/wasm-bindgen/wasm-pack/releases/download/v${WASM_PACK_VERSION}/wasm-pack-v${WASM_PACK_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            -o wasm-pack.tar.gz
+          tar -xzf wasm-pack.tar.gz
+          sudo mv "wasm-pack-v${WASM_PACK_VERSION}-x86_64-unknown-linux-musl/wasm-pack" /usr/local/bin/wasm-pack
+          wasm-pack --version
 
       - run: |
           # wasm-pack test --node --firefox --chrome --safari --headless
