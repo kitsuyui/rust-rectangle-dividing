@@ -60,10 +60,11 @@ pub trait Dividing<T> {
     /// dividing a rectangle into specified weights of rectangles specified by axis
     ///
     /// If the weights sum to zero, they are treated as equal weights.
+    /// Negative weights are clamped to zero before normalization.
     fn divide_by_weights_and_axis(&self, weights: &[T], axis: Axis) -> Vec<Self>
     where
         Self: Sized + RectangleSize<T> + Clone + SizeForAxis<T>,
-        T: Copy + for<'a> std::iter::Sum<&'a T> + Num + NumAssignOps + NumOps,
+        T: Copy + for<'a> std::iter::Sum<&'a T> + Num + NumAssignOps + NumOps + PartialOrd,
     {
         if weights.is_empty() {
             return vec![];
@@ -675,6 +676,7 @@ mod tests {
             + NumOps
             + std::iter::Sum<T>
             + for<'a> std::iter::Sum<&'a T>
+            + std::cmp::PartialOrd
             + std::cmp::PartialOrd<f64>,
     {
         // check that the number of divided rectangles is equal to the number of weights
