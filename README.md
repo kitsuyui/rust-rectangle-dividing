@@ -38,8 +38,8 @@ const rect = { x: 0, y: 0, w: 900, h: 800 };
 const weights: Float32Array = Float32Array.from([4, 4, 1, 1, 1, 1]);
 const aspectRatio = 1.5;
 const verticalFirst = true;
-const boustrophedron = true;
-const divided = dividing(rect, weights, aspectRatio, verticalFirst, boustrophedron);
+const boustrophedon = true;
+const divided = dividing(rect, weights, aspectRatio, verticalFirst, boustrophedon);
 for (const d of divided) {
   console.log(d);
 }
