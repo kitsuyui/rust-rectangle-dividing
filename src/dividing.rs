@@ -692,9 +692,24 @@ mod tests {
             assert!(original.encloses(&d.round()));
         }
         // check no overlap between divided rectangles
-        for (d1, d2) in divided.iter().zip(divided.iter().skip(1)) {
-            assert!(!d1.round().overlaps(&d2.round()));
+        for (index, d1) in divided.iter().enumerate() {
+            for d2 in divided.iter().skip(index + 1) {
+                assert!(!d1.round().overlaps(&d2.round()));
+            }
         }
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_assert_no_overlaps_checks_non_adjacent_pairs() {
+        let original = AxisAlignedRectangle::from4values(0.0, 0.0, 10.0, 10.0);
+        let divided = vec![
+            AxisAlignedRectangle::from4values(0.0, 0.0, 2.0, 2.0),
+            AxisAlignedRectangle::from4values(2.0, 0.0, 2.0, 2.0),
+            AxisAlignedRectangle::from4values(1.0, 1.0, 2.0, 2.0),
+        ];
+
+        assert_no_overlaps(&original, &divided);
     }
 
     fn assert_rects_are_finite(rects: &[AxisAlignedRectangle<f64>]) {
