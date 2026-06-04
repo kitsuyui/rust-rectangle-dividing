@@ -111,6 +111,9 @@ where
     T: Copy + Num + NumAssignOps + NumOps,
 {
     fn aspect_ratio(&self) -> T {
+        if self.height == T::zero() {
+            return T::zero();
+        }
         self.width / self.height
     }
 }
@@ -153,6 +156,20 @@ mod tests {
         assert_eq!(result, 1.7777777777777777);
         let result = Rectangle::new(1920.0, 1080.0).aspect_ratio();
         assert_eq!(result, 1.7777777777777777);
+    }
+
+    #[test]
+    fn test_aspect_ratio_zero_height() {
+        // Zero height must not panic (integer) or return NaN/Inf (float).
+        let result = Rectangle::new(16.0_f64, 0.0).aspect_ratio();
+        assert_eq!(result, 0.0);
+        assert!(result.is_finite());
+
+        let result = Rectangle::new(0.0_f64, 0.0).aspect_ratio();
+        assert_eq!(result, 0.0);
+
+        let result = Rectangle::new(5_i32, 0_i32).aspect_ratio();
+        assert_eq!(result, 0);
     }
 
     #[test]
