@@ -71,6 +71,17 @@ pub trait Dividing<T> {
 
     /// Divide by weights using vertical groups first, then horizontal groups.
     ///
+    /// Items are grouped into vertical bands based on `aspect_ratio`, then each band
+    /// is subdivided horizontally by the weights within that group.
+    ///
+    /// When `boustrophedon` is `true`, every other vertical band (starting from the
+    /// second) has **both** its weight order and its output rectangle order reversed.
+    /// This means the weights within that band are redistributed in reverse order before
+    /// the horizontal subdivision, and the resulting rectangles within that band are
+    /// emitted in reverse order (right-to-left or bottom-to-top). Both reversals happen
+    /// together so that the largest-weight rectangle always appears at the leading edge
+    /// of each band, alternating direction like a boustrophedon reading pattern.
+    ///
     /// If the weights sum to zero, they are treated as equal weights.
     fn divide_vertical_then_horizontal_with_weights(
         &self,
@@ -137,6 +148,12 @@ pub trait Dividing<T> {
     }
 
     /// Divide by weights using horizontal groups first, then vertical groups.
+    ///
+    /// This is the horizontal-first counterpart of
+    /// `divide_vertical_then_horizontal_with_weights`. Items are grouped into horizontal
+    /// bands, then each band is subdivided vertically. The `boustrophedon` flag has the
+    /// same dual-reversal semantics: when `true`, every other horizontal band has both
+    /// its weight order and its output rectangle order reversed.
     ///
     /// If the weights sum to zero, they are treated as equal weights.
     fn divide_horizontal_then_vertical_with_weights(
