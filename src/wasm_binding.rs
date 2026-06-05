@@ -4,7 +4,6 @@ use crate::dividing::Dividing;
 use crate::point::Point;
 use crate::rectangle::{Rectangle, RectangleSize};
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
