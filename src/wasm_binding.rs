@@ -6,6 +6,8 @@ use crate::rectangle::{Rectangle, RectangleSize};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+const MAX_WEIGHTS_LEN: usize = 65536;
+
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub struct JSRect {
     pub x: f64,
@@ -34,6 +36,10 @@ pub fn dividing(
         return Err(JsValue::from_str(
             "aspect_ratio must be a positive finite number",
         ));
+    }
+
+    if weights.len() > MAX_WEIGHTS_LEN {
+        return Err(JsValue::from_str("weights length exceeds maximum"));
     }
 
     let Ok(rect) = serde_wasm_bindgen::from_value::<JSRect>(rect) else {
@@ -118,6 +124,20 @@ mod tests {
             false,
         );
         assert!(result.is_err());
+    }
+
+    #[wasm_bindgen_test]
+    fn test_weights_too_long_rejected() {
+        let rect = serde_wasm_bindgen::to_value(&JSRect {
+            x: 0.0,
+            y: 0.0,
+            w: 100.0,
+            h: 100.0,
+        })
+        .unwrap();
+        let weights = vec![1.0_f64; MAX_WEIGHTS_LEN + 1];
+        let result = dividing(rect, &weights, 1.0, true, false);
+        assert!(result.is_err(), "oversized weights should be rejected");
     }
 
     #[wasm_bindgen_test]
