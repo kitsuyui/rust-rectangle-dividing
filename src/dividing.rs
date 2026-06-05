@@ -3,7 +3,7 @@ use num_traits::{Float, Num, NumAssignOps, NumOps};
 use crate::{
     area::Area,
     axis::{Axis, SizeForAxis},
-    rectangle::RectangleSize,
+    rectangle::{RectangleSize, VerticalDividingHelper},
     rotate::QuarterRotation,
     weight::normalize_weights,
 };
@@ -170,12 +170,6 @@ pub trait Dividing<T> {
             .map(|r| r.rotate_counter_clockwise())
             .collect()
     }
-}
-
-pub(crate) trait VerticalDividingHelper<T> {
-    fn divide_vertical_helper(&self, x: T) -> (Self, Self)
-    where
-        Self: Sized;
 }
 
 impl<T, U> Dividing<T> for U
