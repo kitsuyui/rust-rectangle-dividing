@@ -185,6 +185,7 @@ where
 
     /// Check if the point is strictly inside the rectangle (excluding the boundary).
     /// Use [`Self::includes_or_on_the_boundary`] when the boundary should count as inside.
+    #[allow(dead_code)]
     pub(crate) fn includes(&self, p: &Point<T>) -> bool {
         // x
         if p.x() <= self.min_x() || p.x() >= self.max_x() {
@@ -211,8 +212,10 @@ where
 
     #[allow(dead_code)]
     pub(crate) fn overlaps(&self, other: &Self) -> bool {
-        // if any of the edges of the other rectangle are inside this rectangle, then they overlap
-        other.edges().iter().any(|p| self.includes(p))
+        self.min_x() < other.max_x()
+            && self.max_x() > other.min_x()
+            && self.min_y() < other.max_y()
+            && self.max_y() > other.min_y()
     }
 
     #[allow(dead_code)]
@@ -362,6 +365,29 @@ mod tests {
 
         assert!(!a_rect.overlaps(&AxisAlignedRectangle::from4values(0, 0, 1, 1)));
         assert!(!a_rect.overlaps(&AxisAlignedRectangle::from4values(5, 8, 6, 9)));
+    }
+
+    #[test]
+    fn test_overlaps_detects_crossing_rectangles_without_corner_inclusion() {
+        let horizontal = AxisAlignedRectangle::from4values(0, 4, 10, 2);
+        let vertical = AxisAlignedRectangle::from4values(4, 0, 2, 10);
+        assert!(horizontal.overlaps(&vertical));
+        assert!(vertical.overlaps(&horizontal));
+    }
+
+    #[test]
+    fn test_overlaps_detects_enclosing_rectangles() {
+        let outer = AxisAlignedRectangle::from4values(0, 0, 10, 10);
+        let inner = AxisAlignedRectangle::from4values(2, 3, 4, 5);
+        assert!(outer.overlaps(&inner));
+        assert!(inner.overlaps(&outer));
+    }
+
+    #[test]
+    fn test_overlaps_excludes_boundary_touching_rectangles() {
+        let a_rect = AxisAlignedRectangle::from4values(2, 3, 4, 5);
+        assert!(!a_rect.overlaps(&AxisAlignedRectangle::from4values(6, 3, 4, 5)));
+        assert!(!a_rect.overlaps(&AxisAlignedRectangle::from4values(2, 8, 4, 5)));
     }
 
     #[test]
