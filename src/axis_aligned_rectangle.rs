@@ -101,7 +101,7 @@ where
 
 impl<T> AxisAlignedRectangle<T>
 where
-    T: Copy + Num + NumAssignOps + NumOps,
+    T: Copy + Num + NumAssignOps + NumOps + PartialOrd,
 {
     /// Create a new axis aligned rectangle
     pub fn new(point: &Point<T>, rectangle: &Rectangle<T>) -> Self {
@@ -241,7 +241,7 @@ where
 /// Rotate an axis aligned rectangle by 90 degrees
 impl<T> QuarterRotation for AxisAlignedRectangle<T>
 where
-    T: Copy + Num + NumAssignOps,
+    T: Copy + Num + NumAssignOps + PartialOrd,
 {
     fn rotate_clockwise(&self) -> Self {
         Self::from4values(self.y(), self.x(), self.height(), self.width())
@@ -250,7 +250,7 @@ where
 
 impl<T> VerticalDividingHelper<T> for AxisAlignedRectangle<T>
 where
-    T: Copy + Num + NumAssignOps + NumOps,
+    T: Copy + Num + NumAssignOps + NumOps + PartialOrd,
 {
     /// dividing a rectangle into two rectangles (vertical)
     fn divide_vertical_helper(&self, x: T) -> (AxisAlignedRectangle<T>, AxisAlignedRectangle<T>) {
@@ -428,5 +428,17 @@ mod tests {
         let r = AxisAlignedRectangle::from_two_point(&p, &p);
         assert_eq!(r.origin(), p);
         assert_eq!(r.rect(), Rectangle::new(0.0_f64, 0.0_f64));
+    }
+
+    #[test]
+    #[should_panic(expected = "width must be non-negative")]
+    fn test_from4values_rejects_negative_width() {
+        AxisAlignedRectangle::from4values(0, 0, -10, 5);
+    }
+
+    #[test]
+    #[should_panic(expected = "height must be non-negative")]
+    fn test_from4values_rejects_negative_height() {
+        AxisAlignedRectangle::from4values(0, 0, 10, -5);
     }
 }
