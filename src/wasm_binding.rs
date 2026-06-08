@@ -23,6 +23,12 @@ pub fn dividing(
     vertical_first: bool,
     boustrophedron: bool,
 ) -> Result<JsValue, JsValue> {
+    if !aspect_ratio.is_finite() || aspect_ratio <= 0.0 {
+        return Err(JsValue::from_str(
+            "aspect_ratio must be a positive finite number",
+        ));
+    }
+
     let Ok(rect) = serde_wasm_bindgen::from_value::<JSRect>(rect) else {
         return Err(JsValue::from_str("failed to parse rect"));
     };
@@ -90,5 +96,32 @@ mod tests {
                 }
             ]
         );
+    }
+
+    #[wasm_bindgen_test]
+    fn test_invalid_aspect_ratio_rejected() {
+        let rect = serde_wasm_bindgen::to_value(&JSRect {
+            x: 0.0,
+            y: 0.0,
+            w: 100.0,
+            h: 100.0,
+        })
+        .unwrap();
+
+        for aspect_ratio in [0.0, -1.0, f32::NAN, f32::INFINITY] {
+            for vertical_first in [true, false] {
+                let result = dividing(
+                    rect.clone(),
+                    &[1.0, 1.0],
+                    aspect_ratio,
+                    vertical_first,
+                    false,
+                );
+                assert!(
+                    result.is_err(),
+                    "accepted invalid aspect_ratio: {aspect_ratio}"
+                );
+            }
+        }
     }
 }
