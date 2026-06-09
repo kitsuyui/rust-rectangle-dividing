@@ -21,7 +21,7 @@ pub fn dividing(
     weights: &[f32],
     aspect_ratio: f32,
     vertical_first: bool,
-    boustrophedron: bool,
+    boustrophedon: bool,
 ) -> Result<JsValue, JsValue> {
     if !aspect_ratio.is_finite() || aspect_ratio <= 0.0 {
         return Err(JsValue::from_str(
@@ -36,10 +36,10 @@ pub fn dividing(
         AxisAlignedRectangle::new(&Point::new(rect.x, rect.y), &Rectangle::new(rect.w, rect.h));
     let rects = match vertical_first {
         true => {
-            rect.divide_vertical_then_horizontal_with_weights(weights, aspect_ratio, boustrophedron)
+            rect.divide_vertical_then_horizontal_with_weights(weights, aspect_ratio, boustrophedon)
         }
         false => {
-            rect.divide_horizontal_then_vertical_with_weights(weights, aspect_ratio, boustrophedron)
+            rect.divide_horizontal_then_vertical_with_weights(weights, aspect_ratio, boustrophedon)
         }
     };
 
