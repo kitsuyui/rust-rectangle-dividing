@@ -1,4 +1,4 @@
-use num_traits::{Num, NumAssignOps, NumOps};
+use num_traits::{Float, Num, NumAssignOps, NumOps};
 
 use crate::{
     area::Area,
@@ -7,6 +7,16 @@ use crate::{
     rotate::QuarterRotation,
     weight::normalize_weights,
 };
+
+fn validate_aspect_ratio<T>(aspect_ratio: T)
+where
+    T: Float,
+{
+    assert!(
+        aspect_ratio.is_finite() && aspect_ratio > T::zero(),
+        "aspect_ratio must be a positive finite number"
+    );
+}
 
 pub trait Dividing<T> {
     /// dividing a rectangle into two rectangles (vertical)
@@ -80,8 +90,10 @@ pub trait Dividing<T> {
     ) -> Vec<Self>
     where
         Self: Sized + RectangleSize<T> + Clone + SizeForAxis<T> + Area<T>,
-        T: Copy + for<'a> std::iter::Sum<&'a T> + Num + NumAssignOps + std::cmp::PartialOrd,
+        T: Copy + for<'a> std::iter::Sum<&'a T> + Num + NumAssignOps + Float,
     {
+        validate_aspect_ratio(aspect_ratio);
+
         let norm_weights = normalize_weights(weights);
         let total_area = self.area();
         let height = self.height();
@@ -147,13 +159,10 @@ pub trait Dividing<T> {
     ) -> Vec<Self>
     where
         Self: Sized + RectangleSize<T> + Clone + SizeForAxis<T> + Area<T> + QuarterRotation,
-        T: Copy
-            + Num
-            + NumOps
-            + NumAssignOps
-            + std::cmp::PartialOrd
-            + for<'a> std::iter::Sum<&'a T>,
+        T: Copy + Num + NumOps + NumAssignOps + Float + for<'a> std::iter::Sum<&'a T>,
     {
+        validate_aspect_ratio(aspect_ratio);
+
         // rotate, divide vertical, rotate back again means divide horizontal
         let rotated = self.rotate_clockwise();
         let rotated_aspect_ratio = T::one() / aspect_ratio;
@@ -194,8 +203,6 @@ where
 
 #[cfg(test)]
 mod tests {
-    use num_traits::Float;
-
     use super::*;
     use crate::aspect_ratio::AspectRatio;
     use crate::axis_aligned_rectangle::AxisAlignedRectangle;
@@ -478,6 +485,30 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_aspect_ratio_panics() {
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 100.0, 100.0);
+        let weights = [1.0, 1.0];
+
+        for aspect_ratio in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+            let vertical_result = std::panic::catch_unwind(|| {
+                rect.divide_vertical_then_horizontal_with_weights(&weights, aspect_ratio, false);
+            });
+            assert!(
+                vertical_result.is_err(),
+                "vertical-first layout accepted invalid aspect_ratio: {aspect_ratio}"
+            );
+
+            let horizontal_result = std::panic::catch_unwind(|| {
+                rect.divide_horizontal_then_vertical_with_weights(&weights, aspect_ratio, false);
+            });
+            assert!(
+                horizontal_result.is_err(),
+                "horizontal-first layout accepted invalid aspect_ratio: {aspect_ratio}"
+            );
+        }
+    }
+
+    #[test]
     fn test_divide_horizontal_then_vertical_with_weights() {
         let rect = Rectangle::new(100.0, 100.0);
         let weights = vec![1.0, 1.0, 1.0, 1.0];
@@ -714,9 +745,24 @@ mod tests {
             assert!(original.encloses(&d.round()));
         }
         // check no overlap between divided rectangles
-        for (d1, d2) in divided.iter().zip(divided.iter().skip(1)) {
-            assert!(!d1.round().overlaps(&d2.round()));
+        for (index, d1) in divided.iter().enumerate() {
+            for d2 in divided.iter().skip(index + 1) {
+                assert!(!d1.round().overlaps(&d2.round()));
+            }
         }
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_assert_no_overlaps_checks_non_adjacent_pairs() {
+        let original = AxisAlignedRectangle::from4values(0.0, 0.0, 10.0, 10.0);
+        let divided = vec![
+            AxisAlignedRectangle::from4values(0.0, 0.0, 2.0, 2.0),
+            AxisAlignedRectangle::from4values(2.0, 0.0, 2.0, 2.0),
+            AxisAlignedRectangle::from4values(1.0, 1.0, 2.0, 2.0),
+        ];
+
+        assert_no_overlaps(&original, &divided);
     }
 
     fn assert_rects_are_finite(rects: &[AxisAlignedRectangle<f64>]) {
