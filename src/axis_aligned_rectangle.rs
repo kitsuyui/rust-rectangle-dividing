@@ -4,8 +4,8 @@ use crate::area::Area;
 use crate::aspect_ratio::AspectRatio;
 use crate::axis::{Axis, SizeForAxis};
 use crate::component::Component;
-use crate::dividing::VerticalDividingHelper;
 use crate::point::{Edge, Point};
+use crate::rectangle::VerticalDividingHelper;
 use crate::rectangle::{Rectangle, RectangleSize};
 use crate::rotate::QuarterRotation;
 

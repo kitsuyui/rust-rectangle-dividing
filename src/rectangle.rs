@@ -1,9 +1,14 @@
 use crate::area::Area;
 use crate::aspect_ratio::AspectRatio;
 use crate::axis::{Axis, SizeForAxis};
-use crate::dividing::VerticalDividingHelper;
 use crate::rotate::QuarterRotation;
 use num_traits::{Float, Num, NumAssignOps, NumOps};
+
+pub(crate) trait VerticalDividingHelper<T> {
+    fn divide_vertical_helper(&self, x: T) -> (Self, Self)
+    where
+        Self: Sized;
+}
 /// rectangle in 2D space with a width and height
 
 #[derive(Debug, PartialEq, Clone, Copy)]
