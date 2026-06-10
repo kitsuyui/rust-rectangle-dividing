@@ -6,10 +6,11 @@ inplace() {
   shift
   local tmp
   tmp=$(mktemp)
+  # shellcheck disable=SC2064
+  trap "rm -f '$tmp'" EXIT
   echo "Running: $*"
   "$@" < "$file" > "$tmp"
   mv "$tmp" "$file"
-  rm -f "$tmp"
 }
 
 main() {
