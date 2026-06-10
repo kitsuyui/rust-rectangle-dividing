@@ -32,6 +32,9 @@ pub fn dividing(
     let Ok(rect) = serde_wasm_bindgen::from_value::<JSRect>(rect) else {
         return Err(JsValue::from_str("failed to parse rect"));
     };
+    if rect.w <= 0.0 || rect.h <= 0.0 {
+        return Err(JsValue::from_str("rect.w and rect.h must be positive"));
+    }
     let rect =
         AxisAlignedRectangle::new(&Point::new(rect.x, rect.y), &Rectangle::new(rect.w, rect.h));
     let rects = match vertical_first {
@@ -61,6 +64,54 @@ mod tests {
     use wasm_bindgen_test::wasm_bindgen_test;
 
     use super::*;
+
+    #[wasm_bindgen_test]
+    fn test_negative_dimensions_rejected() {
+        let result = dividing(
+            serde_wasm_bindgen::to_value(&JSRect {
+                x: 0.0,
+                y: 0.0,
+                w: -10.0,
+                h: 100.0,
+            })
+            .unwrap(),
+            &[1.0, 1.0],
+            1.0,
+            true,
+            false,
+        );
+        assert!(result.is_err());
+
+        let result = dividing(
+            serde_wasm_bindgen::to_value(&JSRect {
+                x: 0.0,
+                y: 0.0,
+                w: 100.0,
+                h: -5.0,
+            })
+            .unwrap(),
+            &[1.0, 1.0],
+            1.0,
+            true,
+            false,
+        );
+        assert!(result.is_err());
+
+        let result = dividing(
+            serde_wasm_bindgen::to_value(&JSRect {
+                x: 0.0,
+                y: 0.0,
+                w: 0.0,
+                h: 100.0,
+            })
+            .unwrap(),
+            &[1.0, 1.0],
+            1.0,
+            true,
+            false,
+        );
+        assert!(result.is_err());
+    }
 
     #[wasm_bindgen_test]
     fn test_basis() {
