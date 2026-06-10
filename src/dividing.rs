@@ -99,6 +99,12 @@ pub trait Dividing<T> {
         let total_area = self.area();
         let height = self.height();
 
+        // A zero-height rectangle cannot produce a meaningful aspect ratio; skip the
+        // grouping algorithm and distribute weights along the vertical axis directly.
+        if height == T::zero() {
+            return self.divide_by_weights_and_axis(&norm_weights, Axis::Vertical);
+        }
+
         let mut dividing_weights: Vec<Vec<T>> = Vec::new();
 
         let mut remaining_weights = norm_weights;
@@ -433,6 +439,22 @@ mod tests {
         assert_rects_are_finite(&divided);
         assert_weights_dividing(&rect, &divided, &[-1.0, 1.0]);
         assert_no_overlaps(&rect, &divided);
+    }
+
+    #[test]
+    fn test_divide_zero_height_rect() {
+        let rect = AxisAlignedRectangle::from4values(0.0, 0.0, 90.0, 0.0);
+        let weights = [1.0_f64, 1.0, 1.0];
+
+        let vertical_first =
+            rect.divide_vertical_then_horizontal_with_weights(&weights, 1.0, false);
+        assert_eq!(vertical_first.len(), weights.len());
+        assert_rects_are_finite(&vertical_first);
+
+        let horizontal_first =
+            rect.divide_horizontal_then_vertical_with_weights(&weights, 1.0, false);
+        assert_eq!(horizontal_first.len(), weights.len());
+        assert_rects_are_finite(&horizontal_first);
     }
 
     #[test]
