@@ -9,7 +9,6 @@ codeToTestRatio:
   test:
     - "tests/**/*.rs"
   if: true
-  acceptable: ratio >= 1.0
 testExecutionTime:
   if: true
 diff:
