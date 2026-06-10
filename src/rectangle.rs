@@ -78,9 +78,11 @@ where
 /// A rectangle in 2D space constructor
 impl<T> Rectangle<T>
 where
-    T: Copy + Num + NumAssignOps + NumOps,
+    T: Copy + Num + NumAssignOps + NumOps + PartialOrd,
 {
     pub fn new(width: T, height: T) -> Self {
+        assert!(width >= T::zero(), "width must be non-negative");
+        assert!(height >= T::zero(), "height must be non-negative");
         Self { width, height }
     }
 }
@@ -100,7 +102,7 @@ where
 
 impl<T> VerticalDividingHelper<T> for Rectangle<T>
 where
-    T: Copy + Num + NumAssignOps + NumOps,
+    T: Copy + Num + NumAssignOps + NumOps + PartialOrd,
 {
     /// dividing a rectangle into two rectangles (vertical)
     fn divide_vertical_helper(&self, x: T) -> (Rectangle<T>, Rectangle<T>) {
@@ -251,5 +253,17 @@ mod tests {
         let rotated_twice = rect.rotate_clockwise().rotate_clockwise();
         assert_rect_has_same_component_is_equal(rect, &rotated_twice);
         assert_eq!(rotated_twice, *rect);
+    }
+
+    #[test]
+    #[should_panic(expected = "width must be non-negative")]
+    fn test_new_rejects_negative_width() {
+        Rectangle::new(-1, 3);
+    }
+
+    #[test]
+    #[should_panic(expected = "height must be non-negative")]
+    fn test_new_rejects_negative_height() {
+        Rectangle::new(3, -1);
     }
 }
