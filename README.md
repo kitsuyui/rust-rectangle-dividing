@@ -35,7 +35,7 @@ $ pnpm add @kitsuyui/rectangle-dividing
 import { dividing } from "@kitsuyui/rectangle-dividing";
 
 const rect = { x: 0, y: 0, w: 900, h: 800 };
-const weights: Float32Array = Float32Array.from([4, 4, 1, 1, 1, 1]);
+const weights: Float64Array = Float64Array.from([4, 4, 1, 1, 1, 1]);
 const aspectRatio = 1.5;
 const verticalFirst = true;
 const boustrophedon = true;
@@ -59,8 +59,8 @@ for (const d of divided) {
 dividing's arguments are
 
 - `rect`: The rectangle to be divided
-- `weights`: The weights of each rectangle
-- `aspectRatio`: The aspect ratio of each rectangle
+- `weights`: The weights of each rectangle (`Float64Array`)
+- `aspectRatio`: The aspect ratio threshold (width / height) for grouping rectangles
 - `verticalFirst`: The direction of the first division
 - `boustrophedon`: The direction of the next division in the same level
 

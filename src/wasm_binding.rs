@@ -9,17 +9,25 @@ use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub struct JSRect {
-    pub x: f32,
-    pub y: f32,
-    pub w: f32,
-    pub h: f32,
+    pub x: f64,
+    pub y: f64,
+    pub w: f64,
+    pub h: f64,
 }
 
+/// Divide a rectangle into sub-rectangles by weights and aspect ratio.
+///
+/// - `rect`: input rectangle `{ x, y, w, h }`
+/// - `weights`: relative sizes for each sub-rectangle (`Float64Array`)
+/// - `aspect_ratio`: width/height threshold used to form column groups;
+///   grouping continues until the first item's width-to-height ratio reaches this value
+/// - `vertical_first`: when `true`, column groups are formed before row groups
+/// - `boustrophedron`: when `true`, alternate columns are reversed (snake order)
 #[wasm_bindgen]
 pub fn dividing(
     rect: JsValue,
-    weights: &[f32],
-    aspect_ratio: f32,
+    weights: &[f64],
+    aspect_ratio: f64,
     vertical_first: bool,
     boustrophedon: bool,
 ) -> Result<JsValue, JsValue> {
@@ -159,7 +167,7 @@ mod tests {
         })
         .unwrap();
 
-        for aspect_ratio in [0.0, -1.0, f32::NAN, f32::INFINITY] {
+        for aspect_ratio in [0.0, -1.0, f64::NAN, f64::INFINITY] {
             for vertical_first in [true, false] {
                 let result = dividing(
                     rect.clone(),
