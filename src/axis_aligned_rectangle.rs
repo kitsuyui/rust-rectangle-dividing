@@ -25,11 +25,14 @@ where
 {
     /// Round the coordinates of the rectangle to the nearest integers
     /// This is useful for snapping the rectangle to pixel boundaries.
+    ///
+    /// Sub-pixel rectangles (width or height < 1.0) clamp to zero size after
+    /// rounding because the ceil-of-left-top can exceed the floor-of-right-bottom.
     pub fn round(&self) -> Self {
         let p1 = self.edge_left_top().round(Edge::RightBottom);
         let p2 = self.edge_right_bottom().round(Edge::LeftTop);
-        let width = p2.x() - p1.x();
-        let height = p2.y() - p1.y();
+        let width = (p2.x() - p1.x()).max(T::zero());
+        let height = (p2.y() - p1.y()).max(T::zero());
         let rect = Rectangle::new(width, height);
         Self::new(&p1, &rect)
     }
@@ -440,5 +443,59 @@ mod tests {
     #[should_panic(expected = "height must be non-negative")]
     fn test_from4values_rejects_negative_height() {
         AxisAlignedRectangle::from4values(0, 0, 10, -5);
+    }
+
+    #[test]
+    fn test_round_normal_rect() {
+        // Integer-aligned rect: round is a no-op.
+        let r = AxisAlignedRectangle::from4values(1.0_f64, 2.0, 3.0, 4.0);
+        let rounded = r.round();
+        assert_eq!(rounded.x(), 1.0);
+        assert_eq!(rounded.y(), 2.0);
+        assert_eq!(rounded.width(), 3.0);
+        assert_eq!(rounded.height(), 4.0);
+    }
+
+    #[test]
+    fn test_round_fractional_rect() {
+        // Rect with fractional parts snaps outward via ceil(left-top) / floor(right-bottom).
+        // x=0.3, y=0.4, width=2.5, height=3.2  →  right=2.8, bottom=3.6
+        // p1 = (ceil(0.3), ceil(0.4)) = (1.0, 1.0)
+        // p2 = (floor(2.8), floor(3.6)) = (2.0, 3.0)
+        // width = 1.0, height = 2.0
+        let r = AxisAlignedRectangle::from4values(0.3_f64, 0.4, 2.5, 3.2);
+        let rounded = r.round();
+        assert_eq!(rounded.x(), 1.0);
+        assert_eq!(rounded.y(), 1.0);
+        assert_eq!(rounded.width(), 1.0);
+        assert_eq!(rounded.height(), 2.0);
+    }
+
+    #[test]
+    fn test_round_sub_pixel_width_clamps_to_zero() {
+        // Sub-pixel width: x=1.6, width=0.1  →  right=1.7
+        // p1.x = ceil(1.6) = 2.0, p2.x = floor(1.7) = 1.0
+        // raw diff = -1.0; must clamp to 0.0 (not go negative).
+        let r = AxisAlignedRectangle::from4values(1.6_f64, 0.0, 0.1, 2.0);
+        let rounded = r.round();
+        assert_eq!(rounded.width(), 0.0, "sub-pixel width must clamp to 0");
+        assert!(
+            rounded.height() >= 0.0,
+            "height must be non-negative after round"
+        );
+    }
+
+    #[test]
+    fn test_round_sub_pixel_height_clamps_to_zero() {
+        // Sub-pixel height: y=1.6, height=0.1  →  bottom=1.7
+        // p1.y = ceil(1.6) = 2.0, p2.y = floor(1.7) = 1.0
+        // raw diff = -1.0; must clamp to 0.0.
+        let r = AxisAlignedRectangle::from4values(0.0, 1.6_f64, 2.0, 0.1);
+        let rounded = r.round();
+        assert_eq!(rounded.height(), 0.0, "sub-pixel height must clamp to 0");
+        assert!(
+            rounded.width() >= 0.0,
+            "width must be non-negative after round"
+        );
     }
 }
