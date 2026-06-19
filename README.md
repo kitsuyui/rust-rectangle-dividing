@@ -62,7 +62,12 @@ dividing's arguments are
 - `weights`: The weights of each rectangle (`Float64Array`)
 - `aspectRatio`: The aspect ratio threshold (width / height) for grouping rectangles
 - `verticalFirst`: The direction of the first division
-- `boustrophedon`: The direction of the next division in the same level
+- `boustrophedon`: When `true`, every other band (starting from the second) has **both**
+  its weight order and its output rectangle order reversed. This produces a
+  boustrophedon (alternating-direction) reading pattern where each successive band
+  fills from the opposite edge. Note that reversing the weights changes which item
+  receives the largest share within that band, not only the spatial order of the
+  output rectangles.
 
 If the weights sum to zero, the weights are treated as equal weights.
 
