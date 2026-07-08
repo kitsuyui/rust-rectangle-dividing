@@ -23,7 +23,8 @@ pub struct JSRect {
 /// - `aspect_ratio`: width/height threshold used to form column groups;
 ///   grouping continues until the first item's width-to-height ratio reaches this value
 /// - `vertical_first`: when `true`, column groups are formed before row groups
-/// - `boustrophedron`: when `true`, alternate columns are reversed (snake order)
+/// - `boustrophedon`: when `true`, alternate each group in snake order:
+///   reverse the group weight order and the output rectangle order together
 #[wasm_bindgen]
 pub fn dividing(
     rect: JsValue,

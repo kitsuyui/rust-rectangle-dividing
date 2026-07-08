@@ -62,7 +62,9 @@ dividing's arguments are
 - `weights`: The weights of each rectangle (`Float64Array`)
 - `aspectRatio`: The aspect ratio threshold (width / height) for grouping rectangles
 - `verticalFirst`: The direction of the first division
-- `boustrophedon`: The direction of the next division in the same level
+- `boustrophedon`: When true, alternate each same-level group in snake order.
+  This reverses both the group weight order and the produced rectangles order for
+  each alternate group.
 
 If the weights sum to zero, the weights are treated as equal weights.
 
