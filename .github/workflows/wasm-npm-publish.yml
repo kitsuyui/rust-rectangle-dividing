@@ -17,6 +17,7 @@ env:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   shellcheck:
@@ -58,6 +59,11 @@ jobs:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Verify Node and npm versions for trusted publishing
+        run: |
+          node -e "const [a,b]=process.versions.node.split('.').map(Number); if (a < 22 || (a === 22 && b < 14)) process.exit(1)"
+          node -e "const [a,b,c]=require('child_process').execFileSync('npm',['--version'],{encoding:'utf8'}).trim().split('.').map(Number); if (a < 11 || (a === 11 && (b < 5 || (b === 5 && c < 1)))) process.exit(1)"
+
       - name: Create tarball
         run: tar -czf pkg.tar.gz pkg
 
@@ -69,6 +75,8 @@ jobs:
 
       - name: publish
         if: github.event_name == 'release' && !github.event.release.prerelease
-        run: wasm-pack publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          EXPECTED_TAG: ${{ github.ref_name }}
+        run: |
+          test "v$(node -p "require('./pkg/package.json').version")" = "$EXPECTED_TAG"
+          wasm-pack publish --access public
