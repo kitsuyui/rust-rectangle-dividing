@@ -9,6 +9,15 @@ See [RELEASING.md](RELEASING.md) for the release process and migration guidance.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-26
+
+### Breaking
+
+- WASM `dividing` now accepts `Float64Array` weights and a double-precision aspect ratio. Convert existing `Float32Array` weights to `Float64Array` before calling it.
+- The internal `wasm_binding` Rust module is no longer public. Use the crate's exported Rust API instead.
+- `Rectangle::new` now requires `PartialOrd` and rejects negative dimensions. The WASM API rejects nonpositive dimensions, invalid aspect ratios, and more than 65,536 weights.
+- The WASM parameter name is corrected from `boustrophedron` to `boustrophedon`. Positional JavaScript calls do not need to change; update generated bindings or documentation referring to the old name.
+
 ## [0.1.4] - 2024-07-19
 
 ### Changed
@@ -48,22 +57,8 @@ See [RELEASING.md](RELEASING.md) for the release process and migration guidance.
 - Published to crates.io and npm (`@kitsuyui/rectangle-dividing`)
 - Core `dividing()` function with `rect`, `weights`, `aspect_ratio`, `vertical_first`, and `boustrophedron` parameters
 
-## Known Issues
-
-### `boustrophedron` parameter name typo (tracked separately)
-
-The WASM `dividing()` function exposes a parameter named `boustrophedron`, which is a
-misspelling of the correct term `boustrophedon` (alternating direction, like ox-turning
-in ancient writing). The internal Rust implementation uses the correct spelling.
-
-Because the WASM API is positional (not named), JavaScript callers are not affected by
-the parameter name itself. However, documentation and any named bindings that reference
-this parameter use the misspelled form.
-
-This will be corrected in a future release. See [RELEASING.md](RELEASING.md) for the
-planned migration approach.
-
-[Unreleased]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.1...v0.1.2

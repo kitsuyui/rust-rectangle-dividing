@@ -7,8 +7,8 @@
 3. Update `CHANGELOG.md`: move items from `[Unreleased]` to a new versioned section with the release date
 4. Commit: `Bump version to X.Y.Z`
 5. Push and open a PR; wait for CI to pass
-6. Merge and tag: `git tag vX.Y.Z && git push origin vX.Y.Z`
-7. GitHub Actions will publish to crates.io and npm automatically
+6. Merge the PR, then create a GitHub Release for `vX.Y.Z` targeting the merged commit.
+7. Verify both GitHub Actions publishing workflows and the resulting crates.io and npm package versions.
 
 ## Versioning Policy
 
@@ -24,18 +24,3 @@ When making a breaking change:
 2. Describe the old behavior, the new behavior, and a migration path
 3. If a transition period is needed, introduce the new API alongside the old one and
    mark the old one as deprecated before removing it in a subsequent release
-
-## Known Upcoming Breaking Change: `boustrophedron` → `boustrophedon` rename
-
-The WASM `dividing()` function has a parameter named `boustrophedron` (line 24 of
-`src/wasm_binding.rs`). The correct English term is `boustrophedon`. The internal
-Rust implementation (`src/dividing.rs`) already uses the correct spelling.
-
-**Impact**: The WASM API is positional, so JavaScript callers passing the argument
-by position are not affected. However, any code that relies on the Rust parameter
-name (e.g. via `wasm-bindgen` named argument features, documentation generators,
-or typed bindings) would break on rename.
-
-**Planned fix**: The rename will happen in a future minor version bump. The
-`CHANGELOG.md` will record the version in which this is fixed. No deprecation
-shim is planned; callers should update call sites when upgrading past that version.
