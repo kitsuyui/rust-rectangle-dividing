@@ -9,6 +9,12 @@ See [RELEASING.md](RELEASING.md) for the release process and migration guidance.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-28
+
+### Fixed
+
+- Publish the WASM package through the release workflow using trusted publishing.
+
 ## [0.2.0] - 2026-10-26
 
 ### Breaking
@@ -58,6 +64,7 @@ See [RELEASING.md](RELEASING.md) for the release process and migration guidance.
 - Core `dividing()` function with `rect`, `weights`, `aspect_ratio`, `vertical_first`, and `boustrophedron` parameters
 
 [Unreleased]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.2.0...HEAD
+[0.2.1]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/kitsuyui/rust-rectangle-dividing/compare/v0.1.2...v0.1.3
